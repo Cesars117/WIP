@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npx prisma generate && npm run build",
+  "env": {
+    "POSTGRES_URL": "@postgres_url"
+  }
+}

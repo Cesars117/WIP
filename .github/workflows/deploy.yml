@@ -64,7 +64,8 @@ jobs:
           # Sincronizar schema y generar cliente antes del deploy
           POSTGRES_URL="${{ secrets.POSTGRES_URL }}" npx prisma db push
           npx prisma generate
-          vercel --token="${{ secrets.VERCEL_TOKEN }}" --prod --yes
+          # Deploy con variables de entorno
+          vercel --token="${{ secrets.VERCEL_TOKEN }}" --prod --yes --build-env POSTGRES_URL="${{ secrets.POSTGRES_URL }}"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
