@@ -61,8 +61,8 @@ jobs:
             echo "Error: VERCEL_ORG_ID secret is not set"
             exit 1
           fi
-          # Ejecutar migraciones y generar cliente antes del deploy
-          POSTGRES_URL="${{ secrets.POSTGRES_URL }}" npx prisma migrate deploy
+          # Sincronizar schema y generar cliente antes del deploy
+          POSTGRES_URL="${{ secrets.POSTGRES_URL }}" npx prisma db push
           npx prisma generate
           vercel --token="${{ secrets.VERCEL_TOKEN }}" --prod --yes
         env:
@@ -127,7 +127,7 @@ jobs:
           fi
           # Instalar dependencias y ejecutar deploy
           npm install --omit=dev
-          POSTGRES_URL="${{ secrets.POSTGRES_URL }}" npx prisma migrate deploy
+          POSTGRES_URL="${{ secrets.POSTGRES_URL }}" npx prisma db push
           POSTGRES_URL="${{ secrets.POSTGRES_URL }}" npx prisma generate
           EOF
         env:
