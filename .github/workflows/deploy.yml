@@ -48,6 +48,8 @@ jobs:
           cache: 'npm'
       
       - run: npm install -g vercel
+      - run: npm install
+      - run: npx prisma generate
       
       - name: Deploy to Vercel
         run: |
@@ -108,6 +110,12 @@ jobs:
           cd "${{ secrets.HOSTINGER_PATH }}"
           unzip -o deploy.zip > /dev/null
           rm deploy.zip
+          # Verificar si Node.js está instalado, si no salir con advertencia
+          if ! command -v node &> /dev/null; then
+            echo "Warning: Node.js not found. Please install Node.js on your Hostinger server."
+            echo "You can install it via: curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt-get install -y nodejs"
+            exit 0
+          fi
           npm install --omit=dev
           POSTGRES_URL="${{ secrets.POSTGRES_URL }}" npx prisma migrate deploy
           EOF
