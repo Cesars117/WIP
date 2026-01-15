@@ -106,7 +106,9 @@ export default async function Home({ searchParams }: { searchParams: { query?: s
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border-light)", background: "var(--bg-elevated)" }}>
                   <th style={{ padding: "16px 24px", color: "var(--text-secondary)", fontWeight: 500 }}>Nombre</th>
+                  {/* TODO: Re-enable after Prisma sync 
                   <th style={{ padding: "16px 24px", color: "var(--text-secondary)", fontWeight: 500 }}>Código de Barras</th>
+                  */}
                   <th style={{ padding: "16px 24px", color: "var(--text-secondary)", fontWeight: 500 }}>Categoría</th>
                   <th style={{ padding: "16px 24px", color: "var(--text-secondary)", fontWeight: 500 }}>Ubicación</th>
                   <th style={{ padding: "16px 24px", color: "var(--text-secondary)", fontWeight: 500 }}>Cantidad</th>
@@ -118,6 +120,7 @@ export default async function Home({ searchParams }: { searchParams: { query?: s
                 {displayItems.map((item) => (
                   <tr key={item.id} style={{ borderBottom: "1px solid var(--border-light)" }}>
                     <td style={{ padding: "16px 24px", fontWeight: 500 }}>{item.name}</td>
+                    {/* TODO: Re-enable after Prisma sync
                     <td style={{ padding: "16px 24px", color: "var(--text-secondary)", fontFamily: "monospace", fontSize: "0.875rem" }}>
                       {item.barcode ? (
                         <span style={{ background: "rgba(99, 102, 241, 0.1)", padding: "4px 8px", borderRadius: "4px" }}>
@@ -127,6 +130,7 @@ export default async function Home({ searchParams }: { searchParams: { query?: s
                         <span style={{ color: "var(--text-muted)" }}>-</span>
                       )}
                     </td>
+                    */}
                     <td style={{ padding: "16px 24px", color: "var(--text-secondary)" }}>{item.category.name}</td>
                     <td style={{ padding: "16px 24px", color: "var(--text-secondary)" }}>{item.location.name}</td>
                     <td style={{ padding: "16px 24px" }}>{item.quantity}</td>
