@@ -111,11 +111,13 @@ jobs:
           cd "${{ secrets.HOSTINGER_PATH }}"
           unzip -o deploy.zip > /dev/null
           rm deploy.zip
-          # Instalar Node.js si no existe
+          # Verificar Node.js y dar instrucciones si no existe
           if ! command -v node &> /dev/null; then
-            echo "Installing Node.js..."
-            curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-            apt-get install -y nodejs
+            echo "Node.js not found. Please install Node.js manually:"
+            echo "For CentOS/RHEL: curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash - && sudo yum install -y nodejs"
+            echo "For Ubuntu/Debian: curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash - && sudo apt-get install -y nodejs"
+            echo "Or download from: https://nodejs.org/en/download/"
+            exit 1
           fi
           # Instalar dependencias y ejecutar deploy
           npm install --omit=dev

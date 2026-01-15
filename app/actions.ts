@@ -33,8 +33,9 @@ export async function getItems(query?: string) {
             OR: query ? [
                 { name: { contains: query } },
                 { description: { contains: query } },
-                { sku: { contains: query } },
-                { barcode: { contains: query } }
+                { sku: { contains: query } }
+                // TODO: Re-enable barcode search after Prisma sync
+                // { barcode: { contains: query } }
             ] : undefined
         },
         include: {
