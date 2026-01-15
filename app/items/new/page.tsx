@@ -45,7 +45,7 @@ export default async function NewItemPage() {
                         <BarcodeGeneratorButton />
                     </div>
                     <small style={{ color: "var(--text-secondary)", fontSize: "0.875rem", display: "block", marginTop: "0.5rem" }}>
-                        Opcional - Debe ser único. Usa "Generar" para crear uno automático.
+                        Opcional - Debe ser único. Usa &quot;Generar&quot; para crear uno automático.
                     </small>
                 </div>
 

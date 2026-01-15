@@ -12,7 +12,7 @@ export function BarcodeGeneratorButton() {
                     const barcode = await generateUniqueBarcode()
                     const input = document.getElementById('barcode-input') as HTMLInputElement
                     if (input) input.value = barcode
-                } catch (err) {
+                } catch {
                     alert('Error al generar código')
                 }
             }}

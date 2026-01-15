@@ -6,7 +6,7 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 
 export default async function EditItemPage({ params }: { params: { id: string } }) {
     const id = parseInt(params.id);
-    const item = await getItemById(id);
+    const item: Awaited<ReturnType<typeof getItemById>> = await getItemById(id);
     const categories = await db.category.findMany();
     const locations = await db.location.findMany();
 
@@ -90,7 +90,7 @@ export default async function EditItemPage({ params }: { params: { id: string } 
                             name="barcode"
                             id="barcode-input"
                             type="text"
-                            defaultValue={(item as any).barcode || ''}
+                            defaultValue={item?.barcode || ''}
                             placeholder="Código de barras"
                             style={{ flex: 1, padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
                         />
