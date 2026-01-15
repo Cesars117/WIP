@@ -1,0 +1,90 @@
+name: Build & Deploy to Vercel + Hostinger
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: .next/standalone
+
+  deploy-vercel:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to Vercel
+        uses: vercel/action@main
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
+  deploy-hostinger:
+    name: Deploy to Hostinger
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - run: npm install
+      - run: npm run build
+      
+      - name: Prepare deployment package
+        run: |
+          mkdir -p .next/standalone/public
+          mkdir -p .next/standalone/.next/static
+          cp -r public/* .next/standalone/public/ 2>/dev/null || true
+          cp -r .next/static/* .next/standalone/.next/static/ 2>/dev/null || true
+      
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.HOSTINGER_SSH_KEY }}" > ~/.ssh/hostinger_key
+          chmod 600 ~/.ssh/hostinger_key
+          ssh-keyscan -p ${{ secrets.HOSTINGER_SSH_PORT }} ${{ secrets.HOSTINGER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+      
+      - name: Deploy to Hostinger
+        run: |
+          cd .next/standalone
+          zip -r ../deploy.zip . -q
+          cd ..
+          scp -P ${{ secrets.HOSTINGER_SSH_PORT }} -i ~/.ssh/hostinger_key deploy.zip ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}/
+          ssh -p ${{ secrets.HOSTINGER_SSH_PORT }} -i ~/.ssh/hostinger_key ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }} << 'EOF'
+          cd ${{ secrets.HOSTINGER_PATH }}
+          unzip -o deploy.zip > /dev/null
+          rm deploy.zip
+          npm install --omit=dev
+          EOF
