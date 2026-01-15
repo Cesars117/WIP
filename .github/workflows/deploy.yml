@@ -51,8 +51,14 @@ jobs:
       
       - name: Deploy to Vercel
         run: |
-          export VERCEL_ORG_ID="${{ secrets.VERCEL_ORG_ID }}"
-          export VERCEL_PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID }}"
+          if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "Error: VERCEL_PROJECT_ID secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
+            echo "Error: VERCEL_ORG_ID secret is not set"
+            exit 1
+          fi
           vercel --token="${{ secrets.VERCEL_TOKEN }}" --prod --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -93,7 +99,11 @@ jobs:
           cd .next/standalone
           zip -r ../deploy.zip . -q
           cd ..
+          # Crear directorio si no existe
+          ssh -p "${{ secrets.HOSTINGER_SSH_PORT }}" -i ~/.ssh/hostinger_key "${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}" "mkdir -p '${{ secrets.HOSTINGER_PATH }}'"
+          # Subir archivo
           scp -P "${{ secrets.HOSTINGER_SSH_PORT }}" -i ~/.ssh/hostinger_key deploy.zip "${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}/"
+          # Desplegar
           ssh -p "${{ secrets.HOSTINGER_SSH_PORT }}" -i ~/.ssh/hostinger_key "${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}" << 'EOF'
           cd "${{ secrets.HOSTINGER_PATH }}"
           unzip -o deploy.zip > /dev/null
