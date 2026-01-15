@@ -50,7 +50,10 @@ jobs:
       - run: npm install -g vercel
       
       - name: Deploy to Vercel
-        run: vercel --token=${{ secrets.VERCEL_TOKEN }} --prod --yes
+        run: |
+          export VERCEL_ORG_ID="${{ secrets.VERCEL_ORG_ID }}"
+          export VERCEL_PROJECT_ID="${{ secrets.VERCEL_PROJECT_ID }}"
+          vercel --token="${{ secrets.VERCEL_TOKEN }}" --prod --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -90,13 +93,13 @@ jobs:
           cd .next/standalone
           zip -r ../deploy.zip . -q
           cd ..
-          scp -P ${{ secrets.HOSTINGER_SSH_PORT }} -i ~/.ssh/hostinger_key deploy.zip ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}/
-          ssh -p ${{ secrets.HOSTINGER_SSH_PORT }} -i ~/.ssh/hostinger_key ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }} << 'EOF'
-          cd ${{ secrets.HOSTINGER_PATH }}
+          scp -P "${{ secrets.HOSTINGER_SSH_PORT }}" -i ~/.ssh/hostinger_key deploy.zip "${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}:${{ secrets.HOSTINGER_PATH }}/"
+          ssh -p "${{ secrets.HOSTINGER_SSH_PORT }}" -i ~/.ssh/hostinger_key "${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }}" << 'EOF'
+          cd "${{ secrets.HOSTINGER_PATH }}"
           unzip -o deploy.zip > /dev/null
           rm deploy.zip
           npm install --omit=dev
-          npx prisma migrate deploy
+          POSTGRES_URL="${{ secrets.POSTGRES_URL }}" npx prisma migrate deploy
           EOF
         env:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
