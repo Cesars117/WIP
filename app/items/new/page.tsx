@@ -32,6 +32,7 @@ export default async function NewItemPage() {
                     />
                 </div>
 
+                {/* TODO: Re-enable after Prisma sync
                 <div>
                     <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Código de Barras</label>
                     <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
@@ -48,6 +49,7 @@ export default async function NewItemPage() {
                         Opcional - Debe ser único. Usa &quot;Generar&quot; para crear uno automático.
                     </small>
                 </div>
+                */}
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
                     <div>
