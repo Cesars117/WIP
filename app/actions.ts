@@ -33,9 +33,8 @@ export async function getItems(query?: string) {
             OR: query ? [
                 { name: { contains: query } },
                 { description: { contains: query } },
-                { sku: { contains: query } }
-                // TODO: Re-enable barcode search after Prisma sync
-                // { barcode: { contains: query } }
+                { sku: { contains: query } },
+                { barcode: { contains: query } }
             ] : undefined
         },
         include: {
@@ -52,8 +51,6 @@ export async function createItem(formData: FormData) {
     const locationId = parseInt(formData.get('locationId') as string)
     const quantity = parseInt(formData.get('quantity') as string)
     const status = formData.get('status') as string
-    // TODO: Re-enable barcode functionality after Prisma sync
-    /*
     let barcode = formData.get('barcode') as string | null
     const autoGenerateBarcode = formData.get('autoGenerateBarcode') === 'true'
 
@@ -71,7 +68,6 @@ export async function createItem(formData: FormData) {
             throw new Error(`El código de barras "${barcode}" ya existe en el inventario.`)
         }
     }
-    */
 
     await db.item.create({
         data: {
@@ -79,17 +75,14 @@ export async function createItem(formData: FormData) {
             categoryId,
             locationId,
             quantity,
-            status
-            // TODO: Re-enable after Prisma sync
-            // barcode: barcode || null
+            status,
+            barcode: barcode || null
         }
     })
 
     revalidatePath('/')
 }
 
-// TODO: Re-enable after Prisma sync
-/*
 export async function generateUniqueBarcode() {
     let barcode = ''
     let exists = true
@@ -104,12 +97,6 @@ export async function generateUniqueBarcode() {
     
     return barcode
 }
-*/
-
-export async function generateUniqueBarcode() {
-    // Temporarily disabled - return a simple ID
-    return `BC-TEMP-${Date.now()}`
-}
 
 // Actualizar artículo
 export async function updateItem(formData: FormData) {
@@ -119,8 +106,6 @@ export async function updateItem(formData: FormData) {
     const locationId = parseInt(formData.get('locationId') as string)
     const quantity = parseInt(formData.get('quantity') as string)
     const status = formData.get('status') as string
-    // TODO: Re-enable barcode functionality after Prisma sync
-    /*
     const newBarcode = formData.get('barcode') as string | null
 
     // Validar barcode único si cambió
@@ -135,7 +120,6 @@ export async function updateItem(formData: FormData) {
             throw new Error(`El código de barras "${newBarcode}" ya existe en el inventario.`)
         }
     }
-    */
 
     await db.item.update({
         where: { id },
@@ -144,9 +128,8 @@ export async function updateItem(formData: FormData) {
             categoryId,
             locationId,
             quantity,
-            status
-            // TODO: Re-enable after Prisma sync  
-            // barcode: newBarcode || null
+            status,
+            barcode: newBarcode || null
         }
     })
 
