@@ -53,19 +53,31 @@ export default async function NewItemPage() {
                     <div>
                         <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Categoría</label>
                         <select name="categoryId" required style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
+                            <option value="" disabled selected>Selecciona una categoría</option>
                             {categories.map(cat => (
                                 <option key={cat.id} value={cat.id}>{cat.name}</option>
                             ))}
                         </select>
+                        {categories.length === 0 && (
+                            <p style={{ color: "orange", fontSize: "0.875rem", marginTop: "0.5rem" }}>
+                                ⚠️ No hay categorías. <a href="http://localhost:5555" target="_blank" style={{ color: "var(--accent-main)" }}>Crear en Prisma Studio</a>
+                            </p>
+                        )}
                     </div>
 
                     <div>
                         <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Ubicación</label>
                         <select name="locationId" required style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
+                            <option value="" disabled selected>Selecciona una ubicación</option>
                             {locations.map(loc => (
-                                <option key={loc.id} value={loc.id}>{loc.name}</option>
+                                <option key={loc.id} value={loc.id}>{loc.name} ({loc.type})</option>
                             ))}
                         </select>
+                        {locations.length === 0 && (
+                            <p style={{ color: "orange", fontSize: "0.875rem", marginTop: "0.5rem" }}>
+                                ⚠️ No hay ubicaciones. <a href="http://localhost:5555" target="_blank" style={{ color: "var(--accent-main)" }}>Crear en Prisma Studio</a>
+                            </p>
+                        )}
                     </div>
                 </div>
 
