@@ -22,6 +22,12 @@ jobs:
           cache: 'npm'
       
       - run: npm install
+      
+      - name: Check Prisma migrations
+        run: npx prisma migrate status
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      
       - run: npm run lint
       - run: npm run build
       
@@ -39,12 +45,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Deploy to Vercel
-        uses: vercel/action@main
+      - uses: actions/setup-node@v4
         with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - run: npm install -g vercel
+      
+      - name: Deploy to Vercel
+        run: vercel --token=${{ secrets.VERCEL_TOKEN }} --prod --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
   deploy-hostinger:
     name: Deploy to Hostinger
@@ -87,4 +99,7 @@ jobs:
           unzip -o deploy.zip > /dev/null
           rm deploy.zip
           npm install --omit=dev
+          npx prisma migrate deploy
           EOF
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
