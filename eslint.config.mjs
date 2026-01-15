@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Custom ignores for data scripts:
+    "add-data.*",
+    "seed-simple.*",
+    "prisma-helper.ps1",
   ]),
 ]);
 
