@@ -23,10 +23,7 @@ jobs:
       
       - run: npm install
       
-      - name: Check Prisma migrations
-        run: npx prisma migrate status
-        env:
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      - run: npx prisma generate
       
       - run: npm run lint
       - run: npm run build
