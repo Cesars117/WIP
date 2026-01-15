@@ -10,10 +10,9 @@ async function seed() {
             console.log('   -> Insertando Categorías...');
             await db.category.createMany({
                 data: [
-                    { name: 'Herramientas Eléctricas', description: 'Taladros, sierras, etc.' },
-                    { name: 'Herramientas Manuales', description: 'Martillos, destornilladores' },
-                    { name: 'Conectividad', description: 'Cables, conectores coax, fibra' },
-                    { name: 'Consumibles', description: 'Tornillos, cintas, pegamentos' }
+                    { name: 'Electric-Tool', description: 'Herramientas eléctricas y equipos con motor' },
+                    { name: 'Manual-Tool', description: 'Herramientas manuales y de mano' },
+                    { name: 'Material', description: 'Materiales de construcción y consumibles' }
                 ]
             });
         } else {
@@ -26,10 +25,10 @@ async function seed() {
             console.log('   -> Insertando Ubicaciones...');
             await db.location.createMany({
                 data: [
-                    { name: 'Bodega Central', type: 'WAREHOUSE' },
-                    { name: 'Camioneta #1', type: 'VEHICLE' },
-                    { name: 'Camioneta #2', type: 'VEHICLE' },
-                    { name: 'Sitio Alpha', type: 'SITE' }
+                    { name: '8 Floor NRG', type: 'WAREHOUSE', description: 'Piso 8 del edificio NRG' },
+                    { name: 'Astrodome', type: 'SITE', description: 'Sitio Astrodome' },
+                    { name: 'Memorial', type: 'SITE', description: 'Sitio Memorial' },
+                    { name: 'Center NRG', type: 'WAREHOUSE', description: 'Centro del complejo NRG' }
                 ]
             });
         } else {
