@@ -36,23 +36,33 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
     try {
       setError(null);
       
-      // Solicitar permisos de cámara
+      // Solicitar permisos de cámara y mantener el stream
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } // Cámara trasera preferida
+        video: { 
+          facingMode: 'environment', // Cámara trasera preferida
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
       });
       
       setPermissionStatus('granted');
       
-      // Detener el stream temporal
-      stream.getTracks().forEach(track => track.stop());
+      // Asignar el stream al video element
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        
+        // Esperar a que el video esté listo
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play();
+        };
+      }
       
       // Inicializar el lector de códigos
       codeReader.current = new BrowserMultiFormatReader();
       setIsScanning(true);
       
-      // Comenzar el escaneo
-      await codeReader.current.decodeFromVideoDevice(
-        undefined, // Usar dispositivo por defecto
+      // Comenzar el escaneo usando el stream directamente
+      await codeReader.current.decodeFromVideoElement(
         videoRef.current!,
         (result, error) => {
           if (result) {
