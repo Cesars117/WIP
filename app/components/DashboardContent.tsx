@@ -3,7 +3,8 @@
 import { Package, MapPin, BarChart3, Plus, Edit } from "lucide-react";
 import Link from 'next/link';
 import { useLanguage } from '@/app/contexts/LanguageContext';
-import { SearchResultsList } from './SearchResultsList';
+import { SearchModal } from './SearchModal';
+import { useState } from 'react';
 
 interface Item {
   id: number;
@@ -18,6 +19,21 @@ interface Item {
   sku: string | null;
   category: { name: string };
   location: { name: string };
+}
+
+// Wrapper component to manage modal state - key prop on this resets the state on query change
+function SearchModalWrapper({ items, query }: { items: Item[], query: string }) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  if (!isOpen) return null;
+
+  return (
+    <SearchModal
+      items={items}
+      query={query}
+      onClose={() => setIsOpen(false)}
+    />
+  );
 }
 
 interface DashboardContentProps {
@@ -107,10 +123,17 @@ export function DashboardContent({
           <h2 className="heading-lg">{getSectionTitle()}</h2>
         </div>
 
-        {/* Use card layout for search results, table for other views */}
-        {query ? (
-          <SearchResultsList items={displayItems} query={query} />
-        ) : (
+        {/* Show search modal when there's a query - key prop forces new instance on query change */}
+        {query && displayItems.length > 0 && (
+          <SearchModalWrapper
+            key={query}
+            items={displayItems}
+            query={query}
+          />
+        )}
+
+        {/* Table view for non-search results */}
+        {!query && (
           <div className="card" style={{ padding: 0, overflow: "hidden" }}>
             {displayItems.length === 0 ? (
               <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
@@ -180,8 +203,8 @@ export function DashboardContent({
               </tbody>
             </table>
             </div>
-            )}
-          </div>
+          )}
+        </div>
         )}
       </section>
     </main>
