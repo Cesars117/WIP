@@ -1,5 +1,6 @@
 import { Package, MapPin, Search, BarChart3, Plus, Edit } from "lucide-react";
 import { getDashboardStats, seedInitialData, getItems } from "./actions";
+import { SearchBar } from "./components/SearchBar";
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic'
@@ -89,28 +90,13 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
         </div>
       </section>
 
+      {/* Search Bar with Barcode Scanner */}
+      <SearchBar />
+
       {/* Inventory Preview */}
       <section>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <h2 className="heading-lg">{sectionTitle}</h2>
-          <form method="GET" style={{ position: "relative" }}>
-            <Search size={18} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
-            <input
-              type="text"
-              name="query"
-              placeholder="Buscar por nombre, categoría, barcode..."
-              defaultValue={query}
-              style={{
-                background: "var(--bg-elevated)",
-                border: "1px solid var(--border-light)",
-                padding: "10px 16px 10px 40px",
-                borderRadius: "var(--radius-sm)",
-                color: "var(--text-main)",
-                outline: "none",
-                minWidth: "300px"
-              }}
-            />
-          </form>
         </div>
 
         <div className="card" style={{ padding: 0, overflow: "hidden" }}>

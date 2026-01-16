@@ -2,20 +2,38 @@
 
 import { generateUniqueBarcode } from "@/app/actions"
 
-export function BarcodeGeneratorButton() {
+interface BarcodeGeneratorButtonProps {
+    onBarcodeGenerated?: (barcode: string) => void;
+}
+
+export function BarcodeGeneratorButton({ onBarcodeGenerated }: BarcodeGeneratorButtonProps) {
+    const handleGenerate = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        try {
+            const barcode = await generateUniqueBarcode();
+            
+            // If callback is provided, use it (for controlled components)
+            if (onBarcodeGenerated) {
+                onBarcodeGenerated(barcode);
+            } else {
+                // Fallback to direct DOM manipulation (for uncontrolled components)
+                const input = document.getElementById('barcode-input') as HTMLInputElement;
+                if (input) {
+                    input.value = barcode;
+                    // Trigger input event to notify React
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+        } catch (error) {
+            console.error('Error generating barcode:', error);
+            alert('Error al generar código');
+        }
+    };
+
     return (
         <button
             type="button"
-            onClick={async (e) => {
-                e.preventDefault()
-                try {
-                    const barcode = await generateUniqueBarcode()
-                    const input = document.getElementById('barcode-input') as HTMLInputElement
-                    if (input) input.value = barcode
-                } catch {
-                    alert('Error al generar código')
-                }
-            }}
+            onClick={handleGenerate}
             style={{
                 padding: "12px 16px",
                 background: "rgba(99, 102, 241, 0.1)",
@@ -29,5 +47,5 @@ export function BarcodeGeneratorButton() {
         >
             Generar
         </button>
-    )
+    );
 }
