@@ -205,16 +205,17 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <h3 style={{ 
                         margin: 0, 
-                        fontSize: '1rem', 
-                        fontWeight: 600, 
-                        color: 'var(--text)',
+                        fontSize: '1.125rem', 
+                        fontWeight: 700, 
+                        color: '#000000',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
+                        whiteSpace: 'nowrap',
+                        marginBottom: '6px'
                       }}>
                         {item.name}
                       </h3>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#666666', display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <div>{item.category.name}</div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <MapPin size={12} />
