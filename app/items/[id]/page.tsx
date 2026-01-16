@@ -1,250 +1,171 @@
-import { getItemById, updateItem, deleteItem } from "@/app/actions";
-import { BarcodeGeneratorButton } from "@/app/components/BarcodeGeneratorButton";
-import db from "@/lib/db";
-import Link from 'next/link';
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { getItemById, updateItem, deleteItem } from '@/app/actions'
+import { redirect } from 'next/navigation'
 
-export default async function EditItemPage({ params }: { params: { id: string } }) {
-    const id = parseInt(params.id);
-    const item: Awaited<ReturnType<typeof getItemById>> = await getItemById(id);
-    const categories = await db.category.findMany();
-    const locations = await db.location.findMany();
+interface Props {
+  params: Promise<{ id: string }>
+}
 
-    if (!item) {
-        return (
-            <main className="container" style={{ paddingTop: "4rem", paddingBottom: "4rem" }}>
-                <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "var(--text-secondary)", marginBottom: "2rem", textDecoration: "none" }}>
-                    <ArrowLeft size={20} />
-                    Volver al Panel
-                </Link>
-                <p style={{ color: "var(--text-secondary)" }}>Artículo no encontrado.</p>
-            </main>
-        );
-    }
+export default async function EditItemPage({ params }: Props) {
+  const { id } = await params
+  const item = await getItemById(parseInt(id))
 
-    const isMaterial = categories.find(c => c.id === item.categoryId)?.name === 'Material';
+  if (!item) {
+    redirect('/')
+  }
 
-    return (
-        <main className="container" style={{ paddingTop: "4rem", paddingBottom: "4rem" }}>
-            <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "var(--text-secondary)", marginBottom: "2rem", textDecoration: "none" }}>
-                <ArrowLeft size={20} />
-                Volver al Panel
-            </Link>
+  return (
+    <div className="max-w-md mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Edit Item</h1>
+      
+      <form action={updateItem} className="space-y-4 mb-6">
+        <input type="hidden" name="id" value={item.id} />
+        
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            defaultValue={item.name}
+            required
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-                <div>
-                    <h1 className="heading-xl">Editar Artículo</h1>
-                    <p style={{ color: "var(--text-secondary)" }}>Modifica los detalles del artículo en el inventario.</p>
-                </div>
-                <form action={deleteItem}>
-                    <input type="hidden" name="id" value={item.id} />
-                    <button type="submit" style={{ padding: "8px 16px", background: "var(--error)", color: "white", border: "none", borderRadius: "var(--radius-sm)", display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
-                        <Trash2 size={16} />
-                        Eliminar
-                    </button>
-                </form>
+        <div>
+          <label htmlFor="barcode" className="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+          <input
+            type="text"
+            id="barcode"
+            name="barcode"
+            defaultValue={item.barcode || ''}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select
+            id="categoryId"
+            name="categoryId"
+            defaultValue={item.category.id}
+            required
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select a category</option>
+            <option value="1">Equipment</option>
+            <option value="2">Material</option>
+            <option value="3">Tool</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="locationId" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          <select
+            id="locationId"
+            name="locationId"
+            defaultValue={item.location.id}
+            required
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select a location</option>
+            <option value="1">8th Floor - Box 1</option>
+            <option value="2">8th Floor - Box 2</option>
+            <option value="3">8th Floor - Personal Milwaukee Box</option>
+            <option value="4">8th Floor - Mesa Principal</option>
+            <option value="5">8th Floor - Area General</option>
+            <option value="6">Vehicle 1</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <select
+            id="status"
+            name="status"
+            defaultValue={item.status}
+            required
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="AVAILABLE">Available</option>
+            <option value="IN_USE">In Use</option>
+            <option value="MAINTENANCE">Maintenance</option>
+            <option value="LOST">Lost</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+          <input
+            type="number"
+            id="quantity"
+            name="quantity"
+            defaultValue={item.quantity}
+            min="0"
+            required
+            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+
+        {item.category.name === 'Material' && (
+          <>
+            <div>
+              <label htmlFor="unitType" className="block text-sm font-medium text-gray-700 mb-1">Unit Type</label>
+              <select
+                id="unitType"
+                name="unitType"
+                defaultValue={item.unitType || 'units'}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="units">Units</option>
+                <option value="boxes">Boxes</option>
+              </select>
             </div>
 
-            <form action={updateItem} className="card" style={{ maxWidth: "600px", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-                <input type="hidden" name="id" value={item.id} />
-                
-                <div id="error-message" style={{ display: "none", padding: "12px", background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", color: "#dc2626", borderRadius: "var(--radius-sm)" }}></div>
-
-                <div>
-                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Nombre del Artículo</label>
-                    <input
-                        name="name"
-                        type="text"
-                        required
-                        defaultValue={item.name}
-                        placeholder="Ej. Taladro Percutor 20V"
-                        style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
-                    />
-                </div>
-
-                <div>
-                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Código de Barras</label>
-                    <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-                        <input
-                            name="barcode"
-                            id="barcode-input"
-                            type="text"
-                            defaultValue={item.barcode || ''}
-                            placeholder="Escanea o ingresa el código"
-                            style={{ flex: 1, padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
-                        />
-                        <BarcodeGeneratorButton />
-                    </div>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Categoría</label>
-                        <select name="categoryId" required defaultValue={item.categoryId} style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
-                            {categories.map(cat => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Ubicación</label>
-                        <select name="locationId" required defaultValue={item.locationId} style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
-                            {locations.map(loc => (
-                                <option key={loc.id} value={loc.id}>
-                                    {loc.subcategory ? `${loc.name}` : loc.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                {/* Material-specific fields */}
-                <div id="material-fields" style={{ display: isMaterial ? "block" : "none" }}>
-                    <div style={{ background: "rgba(99, 102, 241, 0.05)", padding: "1.5rem", borderRadius: "var(--radius-sm)", border: "1px solid rgba(99, 102, 241, 0.2)" }}>
-                        <h3 style={{ color: "var(--text-main)", marginBottom: "1rem", fontSize: "1.1rem" }}>⚙️ Configuración de Material</h3>
-                        
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
-                            <div>
-                                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Tipo de Unidad</label>
-                                <select name="unitType" defaultValue={item.unitType || 'UNIT'} style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
-                                    <option value="UNIT">Unidad Individual</option>
-                                    <option value="BOX">Cajas</option>
-                                </select>
-                            </div>
-                            
-                            <div id="units-per-box" style={{ display: item.unitType === 'BOX' ? 'block' : 'none' }}>
-                                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Unidades por Caja</label>
-                                <input name="unitsPerBox" type="number" min="1" defaultValue={item.unitsPerBox || ''} placeholder="ej: 50" style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }} />
-                            </div>
-                            
-                            <div id="total-units" style={{ display: item.unitType === 'BOX' ? 'block' : 'none', padding: "12px", background: "rgba(16, 185, 129, 0.1)", borderRadius: "var(--radius-sm)", border: "1px solid rgba(16, 185, 129, 0.3)" }}>
-                                <label style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: 500 }}>Total de Unidades</label>
-                                <div id="total-display" style={{ color: "var(--success)", fontWeight: 600, fontSize: "1.1rem" }}>
-                                    {item.totalUnits || '-'}
-                                </div>
-                                <input name="totalUnits" type="hidden" defaultValue={item.totalUnits || ''} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-                <div>
-                    <h1 className="heading-xl">Editar Artículo</h1>
-                    <p style={{ color: "var(--text-secondary)", marginTop: "0.5rem" }}>Actualiza la información del artículo.</p>
-                </div>
-                <form
-                    action={async () => {
-                        'use server'
-                        await deleteItem(id);
-                    }}
-                    style={{ margin: 0 }}
-                    onSubmit={(e) => {
-                        if (!confirm('¿Estás seguro de que deseas eliminar este artículo?')) {
-                            e.preventDefault();
-                        }
-                    }}
-                >
-                    <button
-                        type="submit"
-                        style={{
-                            padding: "10px 16px",
-                            background: "rgba(239, 68, 68, 0.1)",
-                            border: "1px solid rgba(239, 68, 68, 0.3)",
-                            color: "#dc2626",
-                            borderRadius: "var(--radius-sm)",
-                            cursor: "pointer",
-                            fontWeight: 600,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px"
-                        }}
-                    >
-                        <Trash2 size={18} />
-                        Eliminar
-                    </button>
-                </form>
+            <div>
+              <label htmlFor="unitsPerBox" className="block text-sm font-medium text-gray-700 mb-1">Units per Box</label>
+              <input
+                type="number"
+                id="unitsPerBox"
+                name="unitsPerBox"
+                defaultValue={item.unitsPerBox || 1}
+                min="1"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
             </div>
 
-            <form action={updateItem} className="card" style={{ maxWidth: "600px", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-                <input type="hidden" name="id" value={id} />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Units</label>
+              <div className="text-gray-600">
+                {item.unitType === 'boxes' 
+                  ? `${item.quantity} boxes × ${item.unitsPerBox || 1} = ${item.totalUnits}`
+                  : `${item.totalUnits}`}
+              </div>
+            </div>
+          </>
+        )}
 
-                <div id="error-message" style={{ display: "none", padding: "12px", background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", color: "#dc2626", borderRadius: "var(--radius-sm)" }}></div>
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Update Item
+        </button>
+      </form>
 
-                <div>
-                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Nombre del Artículo</label>
-                    <input
-                        name="name"
-                        type="text"
-                        required
-                        defaultValue={item.name}
-                        style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
-                    />
-                </div>
-
-                <div>
-                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Código de Barras</label>
-                    <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-                        <input
-                            name="barcode"
-                            id="barcode-input"
-                            type="text"
-                            defaultValue={item?.barcode || ''}
-                            placeholder="Código de barras"
-                            style={{ flex: 1, padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
-                        />
-                        <BarcodeGeneratorButton />
-                    </div>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Categoría</label>
-                        <select name="categoryId" required defaultValue={item.categoryId} style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
-                            {categories.map(cat => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Ubicación</label>
-                        <select name="locationId" required defaultValue={item.locationId} style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
-                            {locations.map(loc => (
-                                <option key={loc.id} value={loc.id}>{loc.name}</option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Cantidad</label>
-                        <input
-                            name="quantity"
-                            type="number"
-                            defaultValue={item.quantity}
-                            min="0"
-                            required
-                            style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
-                        />
-                    </div>
-                    <div>
-                        <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Estado</label>
-                        <select name="status" defaultValue={item.status} style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
-                            <option value="AVAILABLE">Disponible</option>
-                            <option value="IN_USE">En Uso</option>
-                            <option value="MAINTENANCE">Mantenimiento</option>
-                            <option value="LOST">Perdido</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button type="submit" className="btn btn-primary" style={{ marginTop: "1rem" }}>
-                    Guardar Cambios
-                </button>
-            </form>
-        </main>
-    );
+      <form action={deleteItem} onSubmit={(e) => {
+        if (!confirm('Are you sure you want to delete this item?')) {
+          e.preventDefault()
+        }
+      }}>
+        <input type="hidden" name="id" value={item.id} />
+        <button
+          type="submit"
+          className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        >
+          Delete Item
+        </button>
+      </form>
+    </div>
+  )
 }
