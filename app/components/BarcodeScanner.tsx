@@ -32,16 +32,38 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
     }
   }, []);
 
+  const checkCameraPermissions = useCallback(async () => {
+    try {
+      // Verificar si los permisos están disponibles
+      const permissions = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      return permissions.state;
+    } catch {
+      // Si no se puede verificar permisos, asumir que están disponibles
+      return 'prompt';
+    }
+  }, []);
+
   const initializeScanner = useCallback(async () => {
     try {
       setError(null);
+      setPermissionStatus('prompt');
+      
+      // Verificar primero el estado de los permisos
+      const permissionState = await checkCameraPermissions();
+      console.log('Estado de permisos de cámara:', permissionState);
+      
+      if (permissionState === 'denied') {
+        setPermissionStatus('denied');
+        setError('Los permisos de cámara están denegados. Habilítalos en la configuración del navegador.');
+        return;
+      }
       
       // Solicitar permisos de cámara y mantener el stream
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
-          facingMode: 'environment', // Cámara trasera preferida
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          facingMode: { ideal: 'environment' }, // Cámara trasera preferida, pero no requerida
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 }
         } 
       });
       
@@ -51,43 +73,94 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         
-        // Esperar a que el video esté listo
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play();
-        };
+        // Configurar el video para autoplay
+        videoRef.current.muted = true;
+        videoRef.current.playsInline = true;
+        videoRef.current.autoplay = true;
+        
+        // Esperar a que el video esté listo y forzar reproducción
+        await new Promise<void>((resolve, reject) => {
+          const video = videoRef.current;
+          if (!video) {
+            reject(new Error('Video element not found'));
+            return;
+          }
+          
+          const handleLoadedMetadata = async () => {
+            try {
+              await video.play();
+              console.log('Video started successfully');
+              setIsScanning(true);
+              resolve();
+            } catch (playError) {
+              console.error('Error playing video:', playError);
+              reject(playError);
+            }
+          };
+          
+          video.onloadedmetadata = handleLoadedMetadata;
+          
+          // Timeout fallback
+          setTimeout(() => {
+            if (video.readyState >= 2) { // HAVE_CURRENT_DATA
+              handleLoadedMetadata();
+            }
+          }, 100);
+        });
       }
       
-      // Inicializar el lector de códigos
+      // Inicializar el lector de códigos después de que el video esté funcionando
       codeReader.current = new BrowserMultiFormatReader();
-      setIsScanning(true);
       
-      // Comenzar el escaneo usando el stream directamente
-      await codeReader.current.decodeFromVideoElement(
-        videoRef.current!,
-        (result, error) => {
-          if (result) {
-            const scannedText = result.getText();
-            console.log('Código escaneado:', scannedText);
-            onCodeScanned(scannedText);
-            stopScanner();
-          }
-          if (error && error.name !== 'NotFoundException') {
-            console.warn('Error de escaneo:', error);
-          }
+      // Esperar un poco más para asegurar que el video esté renderizado
+      setTimeout(async () => {
+        try {
+          // Comenzar el escaneo usando el elemento de video
+          await codeReader.current?.decodeFromVideoElement(
+            videoRef.current!,
+            (result, error) => {
+              if (result) {
+                const scannedText = result.getText();
+                console.log('Código escaneado:', scannedText);
+                onCodeScanned(scannedText);
+                stopScanner();
+              }
+              if (error && error.name !== 'NotFoundException') {
+                console.warn('Error de escaneo:', error);
+              }
+            }
+          );
+        } catch (scanError) {
+          console.error('Error starting scanner:', scanError);
+          setError('Error al inicializar el escáner. Intenta de nuevo.');
         }
-      );
+      }, 500);
       
     } catch (err) {
       console.error('Error al acceder a la cámara:', err);
+      const error = err as Error;
       setPermissionStatus('denied');
-      setError('No se pudo acceder a la cámara. Verifica los permisos.');
+      
+      // Mensajes de error más específicos
+      if (error.name === 'NotAllowedError') {
+        setError('Permisos de cámara denegados. Permite el acceso y vuelve a intentar.');
+      } else if (error.name === 'NotFoundError') {
+        setError('No se encontró ninguna cámara. Verifica que tu dispositivo tenga una cámara.');
+      } else if (error.name === 'NotSupportedError') {
+        setError('La cámara no es compatible con este navegador.');
+      } else {
+        setError('No se pudo acceder a la cámara. Verifica los permisos y vuelve a intentar.');
+      }
     }
-  }, [onCodeScanned]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onCodeScanned, checkCameraPermissions]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    // Initialize scanner when component mounts
+    // Initialize scanner when component mounts, but don't auto-retry
     const init = async () => {
-      await initializeScanner();
+      // Only auto-initialize if we haven't been denied before
+      if (permissionStatus !== 'denied') {
+        await initializeScanner();
+      }
     };
     
     init();
@@ -168,23 +241,26 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
             <h3 style={{ margin: '0 0 8px 0', fontSize: '1.125rem' }}>
               Cámara no disponible
             </h3>
-            <p style={{ margin: 0, fontSize: '0.875rem', opacity: 0.8 }}>
+            <p style={{ margin: '0 0 16px 0', fontSize: '0.875rem', opacity: 0.8 }}>
               Permite el acceso a la cámara para escanear códigos de barras
             </p>
+            <button
+              onClick={initializeScanner}
+              style={{
+                background: 'var(--primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                fontWeight: 500
+              }}
+            >
+              Reintentar
+            </button>
           </div>
-        ) : isScanning ? (
-          <video
-            ref={videoRef}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover'
-            }}
-            autoPlay
-            playsInline
-            muted
-          />
-        ) : (
+        ) : !isScanning ? (
           <div style={{
             position: 'absolute',
             inset: 0,
@@ -195,10 +271,39 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
             color: 'white'
           }}>
             <Camera size={48} style={{ marginBottom: '16px', opacity: 0.7 }} />
-            <p style={{ margin: 0, fontSize: '0.875rem' }}>
-              Iniciando cámara...
+            <p style={{ margin: 0, fontSize: '0.875rem', textAlign: 'center' }}>
+              {permissionStatus === 'granted' ? 'Iniciando cámara...' : 'Solicitando permisos...'}
             </p>
           </div>
+        ) : (
+          <>
+            <video
+              ref={videoRef}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                backgroundColor: 'black'
+              }}
+              autoPlay
+              playsInline
+              muted
+            />
+            
+            {/* Debug overlay to show video state */}
+            <div style={{
+              position: 'absolute',
+              top: '10px',
+              left: '10px',
+              background: 'rgba(0,0,0,0.7)',
+              color: 'white',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              fontSize: '0.75rem'
+            }}>
+              {videoRef.current && videoRef.current.readyState >= 2 ? '📹 Video activo' : '⏳ Cargando...'}
+            </div>
+          </>
         )}
 
         {/* Scanning Overlay */}
