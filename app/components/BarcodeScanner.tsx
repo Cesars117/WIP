@@ -34,63 +34,89 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
     }
   }, []);
 
+  const isMobile = useCallback(() => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (typeof window !== 'undefined' && window.innerWidth <= 768);
+  }, []);
+
   const checkCameraPermissions = useCallback(async () => {
     try {
-      // Verificar si los permisos están disponibles
+      // En móviles, la API de permisos puede no funcionar correctamente
+      if (isMobile()) {
+        console.log('📱 Dispositivo móvil detectado, omitiendo verificación de permisos');
+        return 'prompt'; // Siempre intentar en móvil
+      }
+      
+      // Verificar si los permisos están disponibles (solo en desktop)
       const permissions = await navigator.permissions.query({ name: 'camera' as PermissionName });
       return permissions.state;
     } catch {
       // Si no se puede verificar permisos, asumir que están disponibles
       return 'prompt';
     }
-  }, []);
+  }, [isMobile]);
 
   const initializeScanner = useCallback(async () => {
     try {
       setError(null);
       setPermissionStatus('prompt');
       console.log('🎥 Iniciando proceso de acceso a cámara...');
+      console.log('📱 Es móvil:', isMobile());
       
       // Verificar si getUserMedia está disponible
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('getUserMedia no está disponible en este navegador');
       }
       
-      // Verificar primero el estado de los permisos
-      let permissionState = 'prompt';
-      try {
-        const permissions = await navigator.permissions.query({ name: 'camera' as PermissionName });
-        permissionState = permissions.state;
-        console.log('📋 Estado de permisos de cámara:', permissionState);
-      } catch (permError) {
-        console.log('⚠️ No se pueden verificar permisos, procediendo con solicitud directa');
+      // En móviles, saltar la verificación de permisos y ir directo a getUserMedia
+      if (!isMobile()) {
+        // Solo verificar permisos en desktop
+        let permissionState = 'prompt';
+        try {
+          const permissions = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          permissionState = permissions.state;
+          console.log('📋 Estado de permisos de cámara:', permissionState);
+        } catch (permError) {
+          console.log('⚠️ No se pueden verificar permisos, procediendo con solicitud directa');
+        }
+        
+        if (permissionState === 'denied') {
+          setPermissionStatus('denied');
+          setError('Los permisos de cámara están denegados. Habilítalos en la configuración del navegador.');
+          return;
+        }
+      } else {
+        console.log('📱 Móvil detectado: omitiendo verificación previa de permisos');
       }
       
-      if (permissionState === 'denied') {
-        setPermissionStatus('denied');
-        setError('Los permisos de cámara están denegados. Habilítalos en la configuración del navegador.');
-        return;
-      }
+      // Configuración específica para móviles vs desktop
+      const mobileConstraints = {
+        video: {
+          facingMode: { ideal: 'environment' }, // Cámara trasera en móvil
+          width: { min: 320, ideal: 480, max: 1280 },
+          height: { min: 240, ideal: 640, max: 720 }
+        }
+      };
       
-      // Intentar con configuración básica primero
+      const desktopConstraints = {
+        video: true  // Configuración más simple para desktop
+      };
+      
+      // Intentar con configuración específica para la plataforma
       let stream: MediaStream;
       try {
-        console.log('🎯 Intentando acceso a cámara con configuración básica...');
+        const constraints = isMobile() ? mobileConstraints : desktopConstraints;
+        console.log('🎯 Intentando acceso a cámara con constraints:', JSON.stringify(constraints));
+        
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log('✅ Acceso a cámara exitoso');
+      } catch (specificError) {
+        console.log('⚠️ Acceso específico falló, intentando con configuración básica...');
+        // Fallback a configuración más básica
         stream = await navigator.mediaDevices.getUserMedia({ 
-          video: true  // Configuración más simple para mayor compatibilidad
+          video: true
         });
-        console.log('✅ Acceso a cámara básico exitoso');
-      } catch (basicError) {
-        console.log('⚠️ Acceso básico falló, intentando con configuración específica...');
-        // Si falla la configuración básica, intentar con configuración específica
-        stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: 'environment', // Sin 'ideal', más directo
-            width: { min: 320, ideal: 640 },
-            height: { min: 240, ideal: 480 }
-          } 
-        });
-        console.log('✅ Acceso a cámara con configuración específica exitoso');
+        console.log('✅ Acceso a cámara con configuración básica exitoso');
       }
       
       setPermissionStatus('granted');
@@ -104,6 +130,12 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
         videoRef.current.muted = true;
         videoRef.current.playsInline = true;
         videoRef.current.autoplay = true;
+        
+        // En móviles, agregar más atributos para compatibilidad
+        if (isMobile()) {
+          videoRef.current.setAttribute('playsinline', 'true');
+          videoRef.current.setAttribute('webkit-playsinline', 'true');
+        }
         
         // Esperar a que el video esté listo y forzar reproducción
         await new Promise<void>((resolve, reject) => {
@@ -129,9 +161,10 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
           
           video.onloadedmetadata = handleLoadedMetadata;
           
-          // Timeout fallback más generoso
+          // Timeout más largo para móviles
+          const timeout = isMobile() ? 3000 : 1000;
           setTimeout(() => {
-            console.log('⏰ Timeout de video, verificando estado...');
+            console.log(`⏰ Timeout de video (${timeout}ms), verificando estado...`);
             if (video.readyState >= 2) { // HAVE_CURRENT_DATA
               console.log('📹 Video listo por timeout fallback');
               handleLoadedMetadata();
@@ -139,7 +172,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
               console.log('❌ Video no está listo después del timeout');
               reject(new Error('Video no se cargó a tiempo'));
             }
-          }, 1000); // Aumentado a 1 segundo
+          }, timeout);
         });
       } else {
         throw new Error('Video element no encontrado');
@@ -149,7 +182,8 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       codeReader.current = new BrowserMultiFormatReader();
       console.log('🔍 Iniciando lector de códigos...');
       
-      // Esperar un poco más para asegurar que el video esté renderizado
+      // Timeout más largo para móviles
+      const scanTimeout = isMobile() ? 2000 : 1000;
       setTimeout(async () => {
         try {
           console.log('🚀 Comenzando escaneo de códigos...');
@@ -173,7 +207,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
           console.error('❌ Error starting scanner:', scanError);
           setError('Error al inicializar el escáner. Intenta de nuevo.');
         }
-      }, 1000); // Aumentado a 1 segundo
+      }, scanTimeout);
       
     } catch (err) {
       console.error('❌ Error al acceder a la cámara:', err);
@@ -184,7 +218,11 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       console.log('🔍 Analizando tipo de error:', error.name, error.message);
       
       if (error.name === 'NotAllowedError') {
-        setError('Permisos de cámara denegados. Haz clic en "Permitir" cuando tu navegador lo solicite.');
+        if (isMobile()) {
+          setError('Permite el acceso a la cámara cuando tu navegador te lo solicite. En algunos móviles puede tardar unos segundos.');
+        } else {
+          setError('Permisos de cámara denegados. Haz clic en "Permitir" cuando tu navegador lo solicite.');
+        }
       } else if (error.name === 'NotFoundError') {
         setError('No se encontró ninguna cámara en tu dispositivo.');
       } else if (error.name === 'NotSupportedError') {
@@ -194,10 +232,11 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       } else if (error.message.includes('getUserMedia')) {
         setError('Tu navegador no soporta acceso a cámara. Prueba con Chrome, Firefox o Safari.');
       } else {
-        setError(`Error de cámara: ${error.message || 'Problema desconocido'}. Verifica los permisos y vuelve a intentar.`);
+        const deviceType = isMobile() ? 'móvil' : 'PC';
+        setError(`Error de cámara en ${deviceType}: ${error.message || 'Problema desconocido'}. Verifica los permisos y vuelve a intentar.`);
       }
     }
-  }, [onCodeScanned, checkCameraPermissions]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onCodeScanned, checkCameraPermissions, isMobile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Initialize scanner when component mounts, but don't auto-retry
