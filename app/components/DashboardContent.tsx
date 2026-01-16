@@ -3,16 +3,19 @@
 import { Package, MapPin, BarChart3, Plus, Edit } from "lucide-react";
 import Link from 'next/link';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { SearchResultsList } from './SearchResultsList';
 
 interface Item {
   id: number;
   name: string;
+  description: string | null;
   barcode: string | null;
   quantity: number;
   status: string;
   unitType: string | null;
   unitsPerBox: number | null;
   totalUnits: number | null;
+  sku: string | null;
   category: { name: string };
   location: { name: string };
 }
@@ -104,12 +107,16 @@ export function DashboardContent({
           <h2 className="heading-lg">{getSectionTitle()}</h2>
         </div>
 
-        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-          {displayItems.length === 0 ? (
-            <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
-              {query ? `${t('dashboard.noSearchResults')} "${query}".` : t('dashboard.noItems')}
-            </div>
-          ) : (
+        {/* Use card layout for search results, table for other views */}
+        {query ? (
+          <SearchResultsList items={displayItems} query={query} />
+        ) : (
+          <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+            {displayItems.length === 0 ? (
+              <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>
+                {t('dashboard.noItems')}
+              </div>
+            ) : (
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", minWidth: "800px" }}>
               <thead>
@@ -173,8 +180,9 @@ export function DashboardContent({
               </tbody>
             </table>
             </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </section>
     </main>
   );
