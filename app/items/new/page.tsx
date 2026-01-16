@@ -70,7 +70,9 @@ export default async function NewItemPage() {
                         <select name="locationId" required style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
                             <option value="" disabled selected>Selecciona una ubicación</option>
                             {locations.map(loc => (
-                                <option key={loc.id} value={loc.id}>{loc.name} ({loc.type})</option>
+                                <option key={loc.id} value={loc.id}>
+                                    {loc.subcategory ? `${loc.name}` : loc.name} {loc.type !== 'WAREHOUSE' && `(${loc.type})`}
+                                </option>
                             ))}
                         </select>
                         {locations.length === 0 && (
@@ -80,6 +82,83 @@ export default async function NewItemPage() {
                         )}
                     </div>
                 </div>
+
+                {/* Material-specific fields */}
+                <div id="material-fields" style={{ display: "none" }}>
+                    <div style={{ background: "rgba(99, 102, 241, 0.05)", padding: "1.5rem", borderRadius: "var(--radius-sm)", border: "1px solid rgba(99, 102, 241, 0.2)" }}>
+                        <h3 style={{ color: "var(--text-main)", marginBottom: "1rem", fontSize: "1.1rem" }}>⚙️ Configuración de Material</h3>
+                        
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
+                            <div>
+                                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Tipo de Unidad</label>
+                                <select name="unitType" style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
+                                    <option value="UNIT">Unidad Individual</option>
+                                    <option value="BOX">Cajas</option>
+                                </select>
+                            </div>
+                            
+                            <div id="units-per-box" style={{ display: "none" }}>
+                                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Unidades por Caja</label>
+                                <input name="unitsPerBox" type="number" min="1" placeholder="ej: 50" style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }} />
+                            </div>
+                            
+                            <div id="total-units" style={{ display: "none", padding: "12px", background: "rgba(16, 185, 129, 0.1)", borderRadius: "var(--radius-sm)", border: "1px solid rgba(16, 185, 129, 0.3)" }}>
+                                <label style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: 500 }}>Total de Unidades</label>
+                                <div id="total-display" style={{ color: "var(--success)", fontWeight: 600, fontSize: "1.1rem" }}>-</div>
+                                <input name="totalUnits" type="hidden" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script dangerouslySetInnerHTML={{
+                    __html: `
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const categorySelect = document.querySelector('select[name="categoryId"]');
+                            const materialFields = document.getElementById('material-fields');
+                            const unitTypeSelect = document.querySelector('select[name="unitType"]');
+                            const unitsPerBoxDiv = document.getElementById('units-per-box');
+                            const totalUnitsDiv = document.getElementById('total-units');
+                            const quantityInput = document.querySelector('input[name="quantity"]');
+                            const unitsPerBoxInput = document.querySelector('input[name="unitsPerBox"]');
+                            const totalUnitsInput = document.querySelector('input[name="totalUnits"]');
+                            const totalDisplay = document.getElementById('total-display');
+                            
+                            function toggleMaterialFields() {
+                                const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+                                const isMaterial = selectedOption.text === 'Material';
+                                materialFields.style.display = isMaterial ? 'block' : 'none';
+                            }
+                            
+                            function toggleUnitsPerBox() {
+                                const isBox = unitTypeSelect.value === 'BOX';
+                                unitsPerBoxDiv.style.display = isBox ? 'block' : 'none';
+                                totalUnitsDiv.style.display = isBox ? 'block' : 'none';
+                                calculateTotal();
+                            }
+                            
+                            function calculateTotal() {
+                                if (unitTypeSelect.value === 'BOX') {
+                                    const quantity = parseInt(quantityInput.value) || 0;
+                                    const unitsPerBox = parseInt(unitsPerBoxInput.value) || 0;
+                                    const total = quantity * unitsPerBox;
+                                    totalDisplay.textContent = total + ' unidades totales';
+                                    totalUnitsInput.value = total;
+                                } else {
+                                    totalUnitsInput.value = '';
+                                }
+                            }
+                            
+                            categorySelect.addEventListener('change', toggleMaterialFields);
+                            unitTypeSelect.addEventListener('change', toggleUnitsPerBox);
+                            quantityInput.addEventListener('input', calculateTotal);
+                            unitsPerBoxInput.addEventListener('input', calculateTotal);
+                            
+                            toggleMaterialFields();
+                            toggleUnitsPerBox();
+                        });
+                    `
+                }} />
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
                     <div>

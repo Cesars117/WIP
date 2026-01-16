@@ -53,6 +53,11 @@ export async function createItem(formData: FormData) {
     const status = formData.get('status') as string
     let barcode = formData.get('barcode') as string | null
     const autoGenerateBarcode = formData.get('autoGenerateBarcode') === 'true'
+    
+    // Material-specific fields
+    const unitType = formData.get('unitType') as string | null
+    const unitsPerBox = formData.get('unitsPerBox') ? parseInt(formData.get('unitsPerBox') as string) : null
+    const totalUnits = formData.get('totalUnits') ? parseInt(formData.get('totalUnits') as string) : null
 
     // Generar código de barras automático si se solicita
     if (autoGenerateBarcode) {
@@ -76,7 +81,10 @@ export async function createItem(formData: FormData) {
             locationId,
             quantity,
             status,
-            barcode: barcode || null
+            barcode: barcode || null,
+            unitType,
+            unitsPerBox,
+            totalUnits
         }
     })
 

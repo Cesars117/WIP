@@ -18,6 +18,11 @@ model Item {
   imageUrl    String?
   status      String   @default("AVAILABLE") // AVAILABLE, IN_USE, MAINTENANCE, LOST
   
+  // Material-specific fields
+  unitType    String?  // UNIT, BOX
+  unitsPerBox Int?     // For materials sold in boxes
+  totalUnits  Int?     // Calculated total units
+  
   category    Category @relation(fields: [categoryId], references: [id])
   categoryId  Int
   
@@ -40,5 +45,6 @@ model Location {
   name        String   @unique
   description String?
   type        String   @default("WAREHOUSE") // WAREHOUSE, VEHICLE, SITE
+  subcategory String?  // For areas like "Box 1", "Personal Milwaukee Box", etc.
   items       Item[]
 }

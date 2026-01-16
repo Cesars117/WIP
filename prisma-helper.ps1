@@ -1,18 +1,28 @@
 # PowerShell script to run Prisma commands with environment variable
-$env:POSTGRES_URL="postgresql://inventory_user:GilloD%40vid1987@ep-cool-cake-a5mnbdqk.us-east-2.aws.neon.tech/inventory_system?sslmode=require"
+$env:POSTGRES_URL="postgres://be161ddc55b93736b3cfc4287ceb21dd62dcbb39dc6abb5c07bff54dac2916e0:sk_LCUT6SFxAl6uv3JQMOChy@db.prisma.io:5432/postgres?sslmode=require"
 
 # Functions for common Prisma commands
-function Start-PrismaStudio {
+function prisma-status {
+    npx prisma migrate status
+}
+
+function prisma-push {
+    npx prisma db push
+}
+
+function prisma-studio {
     npx prisma studio
 }
 
-function Test-PrismaConnection {
-    npx prisma db push --preview-feature
-}
-
-function Reset-PrismaClient {
+function prisma-generate {
     npx prisma generate
 }
 
+function prisma-deploy {
+    npx prisma migrate deploy
+}
+
 # Export functions
-Export-ModuleMember -Function Start-PrismaStudio, Test-PrismaConnection, Reset-PrismaClient
+Export-ModuleMember -Function prisma-status, prisma-push, prisma-studio, prisma-generate, prisma-deploy
+
+Write-Host "✅ Prisma helpers loaded! Use: prisma-status, prisma-push, prisma-studio, prisma-generate, prisma-deploy" -ForegroundColor Green

@@ -22,6 +22,8 @@ export default async function EditItemPage({ params }: { params: { id: string } 
         );
     }
 
+    const isMaterial = categories.find(c => c.id === item.categoryId)?.name === 'Material';
+
     return (
         <main className="container" style={{ paddingTop: "4rem", paddingBottom: "4rem" }}>
             <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "var(--text-secondary)", marginBottom: "2rem", textDecoration: "none" }}>
