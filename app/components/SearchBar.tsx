@@ -6,12 +6,15 @@ import { BarcodeScanResult } from './BarcodeScanResult';
 import { Search, Camera } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { findItemByBarcode } from '@/app/actions';
+import { useLanguage } from '@/app/contexts/LanguageContext';
+import { LanguageToggle } from './LanguageToggle';
 
 export function SearchBar() {
     const [searchQuery, setSearchQuery] = useState('');
     const [scannerOpen, setScannerOpen] = useState(false);
     const [scanResult, setScanResult] = useState<{ barcode: string; item: { id: number; name: string; barcode: string | null; quantity: number; status: string; category: { name: string }; location: { name: string } } | null } | null>(null);
     const router = useRouter();
+    const { t } = useLanguage();
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,7 +83,7 @@ export function SearchBar() {
                     />
                     <input
                         type="text"
-                        placeholder="Buscar por nombre, código de barras, categoría..."
+                        placeholder={t('search.placeholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         style={{
@@ -112,14 +115,14 @@ export function SearchBar() {
                             fontWeight: "500",
                             whiteSpace: "nowrap"
                         }}
-                        title="Escanear código de barras"
+                        title={t('search.scanBarcode')}
                     >
                         <Camera size={20} />
                         <span style={{ 
                             display: "inline-block",
                             minWidth: "max-content"
                         }}>
-                            Escanear
+                            {t('search.scanBarcode')}
                         </span>
                     </button>
 
@@ -136,8 +139,10 @@ export function SearchBar() {
                             whiteSpace: "nowrap"
                         }}
                     >
-                        Buscar
+                        {t('common.search')}
                     </button>
+
+                    <LanguageToggle />
                 </div>
             </form>
 

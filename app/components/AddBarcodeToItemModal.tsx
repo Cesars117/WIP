@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Search, X, Package, Check } from 'lucide-react'
+import { useLanguage } from '@/app/contexts/LanguageContext'
 
 interface Item {
   id: number
@@ -21,6 +22,7 @@ interface AddBarcodeToItemModalProps {
 }
 
 export function AddBarcodeToItemModal({ barcode, items, onClose, onSelectItem }: AddBarcodeToItemModalProps) {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -74,7 +76,7 @@ export function AddBarcodeToItemModal({ barcode, items, onClose, onSelectItem }:
         <div style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <h2 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text)' }}>
-              Agregar Código a Item
+              {t('addBarcodeModal.title')}
             </h2>
             <button
               onClick={onClose}
@@ -90,7 +92,7 @@ export function AddBarcodeToItemModal({ barcode, items, onClose, onSelectItem }:
             </button>
           </div>
           <p style={{ margin: '0 0 16px 0', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Código a asignar: <strong>{barcode}</strong>
+            {t('addBarcodeModal.codeToAssign')}: <strong>{barcode}</strong>
           </p>
 
           {/* Search Bar */}
@@ -109,7 +111,7 @@ export function AddBarcodeToItemModal({ barcode, items, onClose, onSelectItem }:
             />
             <input
               type="text"
-              placeholder="Buscar items..."
+              placeholder={t('addBarcodeModal.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -139,7 +141,7 @@ export function AddBarcodeToItemModal({ barcode, items, onClose, onSelectItem }:
             }}>
               <Package size={48} style={{ opacity: 0.3, marginBottom: '12px' }} />
               <p style={{ margin: 0, fontSize: '0.875rem' }}>
-                No se encontraron items
+                {t('addBarcodeModal.noItems')}
               </p>
             </div>
           ) : (
@@ -171,7 +173,7 @@ export function AddBarcodeToItemModal({ barcode, items, onClose, onSelectItem }:
                         padding: '2px 6px',
                         borderRadius: '4px'
                       }}>
-                        Ya tiene código
+                        {t('addBarcodeModal.hasCode')}
                       </span>
                     )}
                   </div>
@@ -218,7 +220,7 @@ export function AddBarcodeToItemModal({ barcode, items, onClose, onSelectItem }:
               opacity: isSubmitting ? 0.5 : 1
             }}
           >
-            Cancelar
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -236,7 +238,7 @@ export function AddBarcodeToItemModal({ barcode, items, onClose, onSelectItem }:
               opacity: selectedItemId === null || isSubmitting ? 0.5 : 1
             }}
           >
-            {isSubmitting ? 'Guardando...' : 'Asignar Código'}
+            {isSubmitting ? t('common.saving') : t('addBarcodeModal.assign')}
           </button>
         </div>
       </div>

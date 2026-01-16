@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Package, Plus, Link2 } from 'lucide-react'
 import { AddBarcodeToItemModal } from './AddBarcodeToItemModal'
 import { getItems, updateItemBarcode } from '@/app/actions'
+import { useLanguage } from '@/app/contexts/LanguageContext'
 
 interface Item {
   id: number
@@ -23,6 +24,7 @@ interface BarcodeScanResultProps {
 }
 
 export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultProps) {
+  const { t } = useLanguage();
   const router = useRouter()
   const [showAddModal, setShowAddModal] = useState(false)
   const [allItems, setAllItems] = useState<Item[]>([])
@@ -112,10 +114,10 @@ export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultP
               <Package size={30} />
             </div>
             <h2 style={{ margin: '0 0 8px 0', fontSize: '1.5rem', color: 'var(--text)' }}>
-              ¡Item Encontrado!
+              {t('scanResult.found')}
             </h2>
             <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              Código: {barcode}
+              {t('scanResult.code')}: {barcode}
             </p>
           </div>
 
@@ -130,19 +132,19 @@ export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultP
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Categoría:</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{t('common.category')}:</span>
                 <span style={{ color: 'var(--text)', fontWeight: 500 }}>{item.category.name}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Ubicación:</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{t('common.location')}:</span>
                 <span style={{ color: 'var(--text)', fontWeight: 500 }}>{item.location.name}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Cantidad:</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{t('common.quantity')}:</span>
                 <span style={{ color: 'var(--text)', fontWeight: 500 }}>{item.quantity}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Estado:</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{t('common.status')}:</span>
                 <span style={{ 
                   color: item.status === 'AVAILABLE' ? 'var(--success)' : 'var(--warning)',
                   fontWeight: 500 
@@ -168,7 +170,7 @@ export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultP
                 cursor: 'pointer'
               }}
             >
-              Cerrar
+              {t('common.close')}
             </button>
             <button
               onClick={handleViewItem}
@@ -184,7 +186,7 @@ export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultP
                 cursor: 'pointer'
               }}
             >
-              Ver Detalles
+              {t('scanResult.viewDetails')}
             </button>
           </div>
         </div>
@@ -229,10 +231,10 @@ export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultP
             <Package size={30} />
           </div>
           <h2 style={{ margin: '0 0 8px 0', fontSize: '1.5rem', color: 'var(--text)' }}>
-            Código no encontrado
+            {t('scanResult.notFound')}
           </h2>
           <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            Código: {barcode}
+            {t('scanResult.code')}: {barcode}
           </p>
         </div>
 
@@ -242,7 +244,7 @@ export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultP
           textAlign: 'center',
           fontSize: '0.875rem'
         }}>
-          Este código no está registrado. ¿Qué deseas hacer?
+          {t('scanResult.notRegistered')}
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -264,7 +266,7 @@ export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultP
             }}
           >
             <Plus size={18} />
-            Crear Nuevo Item
+            {t('scanResult.createNew')}
           </button>
 
           <button
@@ -285,7 +287,7 @@ export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultP
             }}
           >
             <Link2 size={18} />
-            Agregar a Item Existente
+            {t('scanResult.addToExisting')}
           </button>
 
           <button
@@ -301,7 +303,7 @@ export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultP
               cursor: 'pointer'
             }}
           >
-            Cancelar
+            {t('common.cancel')}
           </button>
         </div>
       </div>

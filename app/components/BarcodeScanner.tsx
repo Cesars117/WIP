@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { BrowserMultiFormatReader } from '@zxing/browser'
 import { DecodeHintType, BarcodeFormat } from '@zxing/library'
 import { X, Camera, CameraOff } from 'lucide-react'
+import { useLanguage } from '@/app/contexts/LanguageContext'
 
 interface BarcodeScannerProps {
   onCodeScanned: (result: string) => void;
@@ -11,6 +12,7 @@ interface BarcodeScannerProps {
 }
 
 export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) {
+  const { t } = useLanguage();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,7 +123,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
         
         if (permissionState === 'denied') {
           setPermissionStatus('denied');
-          setError('Los permisos de cámara están denegados. Habilítalos en la configuración del navegador.');
+          setError(t('scanner.permissionDenied'));
           return;
         }
       } else {
@@ -266,7 +268,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
           console.log('✅ Escáner iniciado correctamente');
         } catch (scanError) {
           console.error('❌ Error starting scanner:', scanError);
-          setError('Error al inicializar el escáner. Intenta de nuevo.');
+          setError(t('scanner.cameraError'));
         }
       }, scanTimeout);
       
@@ -279,22 +281,17 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       console.log('🔍 Analizando tipo de error:', error.name, error.message);
       
       if (error.name === 'NotAllowedError') {
-        if (isMobile()) {
-          setError('Permite el acceso a la cámara cuando tu navegador te lo solicite. En algunos móviles puede tardar unos segundos.');
-        } else {
-          setError('Permisos de cámara denegados. Haz clic en "Permitir" cuando tu navegador lo solicite.');
-        }
+        setError(t('scanner.permissionDenied'));
       } else if (error.name === 'NotFoundError') {
-        setError('No se encontró ninguna cámara en tu dispositivo.');
+        setError(t('scanner.cameraError'));
       } else if (error.name === 'NotSupportedError') {
-        setError('Tu navegador no es compatible con el acceso a la cámara.');
+        setError(t('scanner.unsupported'));
       } else if (error.name === 'OverconstrainedError') {
-        setError('La cámara no cumple con los requisitos. Intenta con una cámara diferente.');
+        setError(t('scanner.cameraError'));
       } else if (error.message.includes('getUserMedia')) {
-        setError('Tu navegador no soporta acceso a cámara. Prueba con Chrome, Firefox o Safari.');
+        setError(t('scanner.unsupported'));
       } else {
-        const deviceType = isMobile() ? 'móvil' : 'PC';
-        setError(`Error de cámara en ${deviceType}: ${error.message || 'Problema desconocido'}. Verifica los permisos y vuelve a intentar.`);
+        setError(t('scanner.cameraError'));
       }
     }
   }, [onCodeScanned, checkCameraPermissions, isMobile, waitForVideoElement]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -341,7 +338,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
         color: 'white'
       }}>
         <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
-          Escanear Código de Barras
+          {t('scanner.title')}
         </h2>
         <button
           onClick={onClose}
@@ -387,10 +384,10 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
           }}>
             <CameraOff size={48} style={{ marginBottom: '16px', opacity: 0.7 }} />
             <h3 style={{ margin: '0 0 8px 0', fontSize: '1.125rem' }}>
-              Cámara no disponible
+              {t('scanner.permissionDenied')}
             </h3>
             <p style={{ margin: '0 0 16px 0', fontSize: '0.875rem', opacity: 0.8 }}>
-              Permite el acceso a la cámara para escanear códigos de barras
+              {t('scanner.instructions')}
             </p>
             <button
               onClick={initializeScanner}
@@ -405,7 +402,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
                 fontWeight: 500
               }}
             >
-              Reintentar
+              {t('scanner.retry')}
             </button>
           </div>
         ) : (
@@ -447,7 +444,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
               }}>
                 <Camera size={48} style={{ marginBottom: '16px', opacity: 0.7 }} />
                 <p style={{ margin: 0, fontSize: '0.875rem', textAlign: 'center' }}>
-                  {permissionStatus === 'granted' ? 'Iniciando cámara...' : 'Solicitando permisos...'}
+                  {permissionStatus === 'granted' ? t('scanner.initializing') : t('scanner.permissionDenied')}
                 </p>
               </div>
             )}
@@ -510,7 +507,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
           opacity: 0.8,
           lineHeight: 1.5 
         }}>
-          Apunta la cámara hacia el código de barras. La captura es automática.
+          {t('scanner.instructions')}
         </p>
       </div>
 
