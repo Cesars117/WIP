@@ -1,7 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Package, Plus, Link2 } from 'lucide-react'
+import { AddBarcodeToItemModal } from './AddBarcodeToItemModal'
+import { getItems, updateItemBarcode } from '@/app/actions'
 
 interface Item {
   id: number
@@ -21,6 +24,24 @@ interface BarcodeScanResultProps {
 
 export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultProps) {
   const router = useRouter()
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [allItems, setAllItems] = useState<Item[]>([])
+
+  useEffect(() => {
+    if (showAddModal && allItems.length === 0) {
+      loadItems()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showAddModal])
+
+  const loadItems = async () => {
+    try {
+      const items = await getItems()
+      setAllItems(items as Item[])
+    } catch (error) {
+      console.error('Error al cargar items:', error)
+    }
+  }
 
   const handleViewItem = () => {
     if (item) {
@@ -33,7 +54,24 @@ export function BarcodeScanResult({ barcode, item, onClose }: BarcodeScanResultP
   }
 
   const handleAddToExisting = () => {
-    router.push(`/?query=&addBarcode=${encodeURIComponent(barcode)}`)
+    setShowAddModal(true)
+  }
+
+  const handleSelectItem = async (itemId: number) => {
+    await updateItemBarcode(itemId, barcode)
+    router.refresh()
+    onClose()
+  }
+
+  if (showAddModal) {
+    return (
+      <AddBarcodeToItemModal
+        barcode={barcode}
+        items={allItems}
+        onClose={() => setShowAddModal(false)}
+        onSelectItem={handleSelectItem}
+      />
+    )
   }
 
   if (item) {

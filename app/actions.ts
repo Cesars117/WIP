@@ -67,6 +67,15 @@ export async function findItemByBarcode(barcode: string) {
     })
 }
 
+export async function updateItemBarcode(itemId: number, barcode: string) {
+    await db.item.update({
+        where: { id: itemId },
+        data: { barcode }
+    })
+    revalidatePath('/')
+    revalidatePath(`/items/${itemId}`)
+}
+
 export async function createItem(formData: FormData) {
     const name = formData.get('name') as string
     const categoryId = parseInt(formData.get('categoryId') as string)
