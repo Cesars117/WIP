@@ -391,23 +391,9 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
               Reintentar
             </button>
           </div>
-        ) : !isScanning ? (
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white'
-          }}>
-            <Camera size={48} style={{ marginBottom: '16px', opacity: 0.7 }} />
-            <p style={{ margin: 0, fontSize: '0.875rem', textAlign: 'center' }}>
-              {permissionStatus === 'granted' ? 'Iniciando cámara...' : 'Solicitando permisos...'}
-            </p>
-          </div>
         ) : (
           <>
+            {/* Always render video element, but show loading overlay when not ready */}
             <video
               ref={(el) => {
                 videoRef.current = el;
@@ -430,6 +416,25 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
               muted
             />
             
+            {/* Loading overlay when video is not ready */}
+            {!videoReady && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                background: 'rgba(0,0,0,0.8)'
+              }}>
+                <Camera size={48} style={{ marginBottom: '16px', opacity: 0.7 }} />
+                <p style={{ margin: 0, fontSize: '0.875rem', textAlign: 'center' }}>
+                  {permissionStatus === 'granted' ? 'Iniciando cámara...' : 'Solicitando permisos...'}
+                </p>
+              </div>
+            )}
+            
             {/* Debug overlay to show video state */}
             <div style={{
               position: 'absolute',
@@ -449,8 +454,8 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
           </>
         )}
 
-        {/* Scanning Overlay */}
-        {isScanning && (
+        {/* Scanning Overlay - show when video is ready and scanning */}
+        {videoReady && isScanning && (
           <div style={{
             position: 'absolute',
             inset: '20%',
