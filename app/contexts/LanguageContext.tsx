@@ -155,6 +155,7 @@ const enTranslations = {
     updateItem: 'Update Item',
     currentBarcode: 'Current barcode',
     noBarcode: 'No barcode assigned',
+    editingItem: 'Editing item',
   },
   itemDetails: {
     editItem: 'Edit Item',
@@ -284,6 +285,7 @@ const esTranslations = {
     updateItem: 'Actualizar Item',
     currentBarcode: 'Código actual',
     noBarcode: 'Sin código asignado',
+    editingItem: 'Editando artículo',
   },
   itemDetails: {
     editItem: 'Editar Item',
