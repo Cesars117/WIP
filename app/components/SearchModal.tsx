@@ -266,7 +266,14 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
               )}
               {/* Item Header */}
               <div style={{ marginBottom: '24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: items.length === 1 ? 'column' : 'row',
+                  alignItems: 'center', 
+                  gap: '16px', 
+                  marginBottom: '12px',
+                  textAlign: items.length === 1 ? 'center' : 'left'
+                }}>
                   <div style={{
                     background: 'var(--primary-light)',
                     color: 'var(--primary)',
@@ -279,12 +286,19 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                   }}>
                     <Package size={items.length === 1 ? 40 : 32} />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{ margin: '0 0 8px 0', fontSize: items.length === 1 ? '2rem' : '1.5rem', fontWeight: 600, color: 'var(--text)' }}>
+                  <div style={{ flex: items.length === 1 ? 'none' : 1, width: items.length === 1 ? '100%' : 'auto' }}>
+                    <h3 style={{ 
+                      margin: '0 0 8px 0', 
+                      fontSize: items.length === 1 ? '2.5rem' : '1.5rem', 
+                      fontWeight: 700, 
+                      color: 'var(--text)',
+                      textAlign: items.length === 1 ? 'center' : 'left'
+                    }}>
                       {selectedItem.name}
                     </h3>
                     <div style={{
-                      display: 'inline-block',
+                      display: items.length === 1 ? 'flex' : 'inline-block',
+                      justifyContent: items.length === 1 ? 'center' : 'flex-start',
                       background: getStatusColor(selectedItem.status).bg,
                       color: getStatusColor(selectedItem.status).color,
                       padding: '6px 16px',
@@ -337,63 +351,123 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                 marginBottom: '24px'
               }}>
                 <div style={{
-                  background: 'var(--background)',
-                  padding: items.length === 1 ? '20px' : '16px',
-                  borderRadius: '12px'
+                  background: items.length === 1 ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)' : 'var(--background)',
+                  padding: items.length === 1 ? '24px' : '16px',
+                  borderRadius: '12px',
+                  border: items.length === 1 ? '2px solid rgba(99, 102, 241, 0.2)' : 'none'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <Tag size={items.length === 1 ? 20 : 16} style={{ color: 'var(--text-secondary)' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                    <div style={{
+                      background: 'var(--primary)',
+                      color: 'white',
+                      width: items.length === 1 ? '40px' : '32px',
+                      height: items.length === 1 ? '40px' : '32px',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <Tag size={items.length === 1 ? 24 : 16} />
+                    </div>
                     <label style={{
-                      fontSize: items.length === 1 ? '0.875rem' : '0.75rem',
-                      fontWeight: 600,
-                      color: 'var(--text-secondary)',
-                      textTransform: 'uppercase'
+                      fontSize: items.length === 1 ? '1rem' : '0.75rem',
+                      fontWeight: 700,
+                      color: 'var(--primary)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
                     }}>
                       {t('common.category')}
                     </label>
                   </div>
-                  <p style={{ margin: 0, fontSize: items.length === 1 ? '1.25rem' : '1rem', fontWeight: 600, color: 'var(--text)' }}>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: items.length === 1 ? '1.75rem' : '1rem', 
+                    fontWeight: 700, 
+                    color: 'var(--text)',
+                    lineHeight: '1.2'
+                  }}>
                     {selectedItem.category.name}
                   </p>
                 </div>
 
                 <div style={{
-                  background: 'var(--background)',
-                  padding: items.length === 1 ? '20px' : '16px',
-                  borderRadius: '12px'
+                  background: items.length === 1 ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)' : 'var(--background)',
+                  padding: items.length === 1 ? '24px' : '16px',
+                  borderRadius: '12px',
+                  border: items.length === 1 ? '2px solid rgba(16, 185, 129, 0.2)' : 'none'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <MapPin size={items.length === 1 ? 20 : 16} style={{ color: 'var(--text-secondary)' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                    <div style={{
+                      background: 'var(--success)',
+                      color: 'white',
+                      width: items.length === 1 ? '40px' : '32px',
+                      height: items.length === 1 ? '40px' : '32px',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <MapPin size={items.length === 1 ? 24 : 16} />
+                    </div>
                     <label style={{
-                      fontSize: items.length === 1 ? '0.875rem' : '0.75rem',
-                      fontWeight: 600,
-                      color: 'var(--text-secondary)',
-                      textTransform: 'uppercase'
+                      fontSize: items.length === 1 ? '1rem' : '0.75rem',
+                      fontWeight: 700,
+                      color: 'var(--success)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
                     }}>
                       {t('common.location')}
                     </label>
                   </div>
-                  <p style={{ margin: 0, fontSize: items.length === 1 ? '1.25rem' : '1rem', fontWeight: 600, color: 'var(--text)' }}>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: items.length === 1 ? '1.75rem' : '1rem', 
+                    fontWeight: 700, 
+                    color: 'var(--text)',
+                    lineHeight: '1.2'
+                  }}>
                     {selectedItem.location.name}
                   </p>
                 </div>
 
                 <div style={{
-                  background: 'var(--background)',
-                  padding: items.length === 1 ? '20px' : '16px',
-                  borderRadius: '12px'
+                  background: items.length === 1 ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)' : 'var(--background)',
+                  padding: items.length === 1 ? '24px' : '16px',
+                  borderRadius: '12px',
+                  border: items.length === 1 ? '2px solid rgba(245, 158, 11, 0.2)' : 'none'
                 }}>
-                  <label style={{
-                    fontSize: items.length === 1 ? '0.875rem' : '0.75rem',
-                    fontWeight: 600,
-                    color: 'var(--text-secondary)',
-                    textTransform: 'uppercase',
-                    marginBottom: '8px',
-                    display: 'block'
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                    <div style={{
+                      background: 'var(--warning)',
+                      color: 'white',
+                      width: items.length === 1 ? '40px' : '32px',
+                      height: items.length === 1 ? '40px' : '32px',
+                      borderRadius: '8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: items.length === 1 ? '1.5rem' : '1rem',
+                      fontWeight: 'bold'
+                    }}>
+                      #
+                    </div>
+                    <label style={{
+                      fontSize: items.length === 1 ? '1rem' : '0.75rem',
+                      fontWeight: 700,
+                      color: 'var(--warning)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em'
+                    }}>
+                      {t('common.quantity')}
+                    </label>
+                  </div>
+                  <p style={{ 
+                    margin: 0, 
+                    fontSize: items.length === 1 ? '2.5rem' : '1.5rem', 
+                    fontWeight: 700, 
+                    color: 'var(--text)',
+                    lineHeight: '1'
                   }}>
-                    {t('common.quantity')}
-                  </label>
-                  <p style={{ margin: 0, fontSize: items.length === 1 ? '2rem' : '1.5rem', fontWeight: 700, color: 'var(--text)' }}>
                     {selectedItem.quantity}
                   </p>
                 </div>
