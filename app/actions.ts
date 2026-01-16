@@ -57,6 +57,16 @@ export async function getItems(query?: string) {
     })
 }
 
+export async function findItemByBarcode(barcode: string) {
+    return db.item.findUnique({
+        where: { barcode },
+        include: {
+            category: true,
+            location: true
+        }
+    })
+}
+
 export async function createItem(formData: FormData) {
     const name = formData.get('name') as string
     const categoryId = parseInt(formData.get('categoryId') as string)

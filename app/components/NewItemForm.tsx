@@ -8,10 +8,11 @@ interface NewItemFormProps {
   categories: Array<{ id: number; name: string }>
   locations: Array<{ id: number; name: string }>
   createItem: (formData: FormData) => Promise<void>
+  preloadedBarcode?: string | null
 }
 
-export function NewItemForm({ categories, locations, createItem }: NewItemFormProps) {
-  const [barcode, setBarcode] = useState('')
+export function NewItemForm({ categories, locations, createItem, preloadedBarcode }: NewItemFormProps) {
+  const [barcode, setBarcode] = useState(preloadedBarcode || '')
   const [unitType, setUnitType] = useState('units')
   const [categoryId, setCategoryId] = useState('')
 

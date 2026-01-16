@@ -2,12 +2,15 @@
 
 import { useState } from 'react';
 import { BarcodeScanner } from './BarcodeScanner';
+import { BarcodeScanResult } from './BarcodeScanResult';
 import { Search, Camera } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { findItemByBarcode } from '@/app/actions';
 
 export function SearchBar() {
     const [searchQuery, setSearchQuery] = useState('');
     const [scannerOpen, setScannerOpen] = useState(false);
+    const [scanResult, setScanResult] = useState<{ barcode: string; item: any } | null>(null);
     const router = useRouter();
 
     const handleSearch = (e: React.FormEvent) => {
@@ -17,13 +20,17 @@ export function SearchBar() {
         }
     };
 
-    const handleBarcodeScanned = (code: string) => {
+    const handleBarcodeScanned = async (code: string) => {
         console.log('Barcode scanned:', code);
-        setSearchQuery(code);
         setScannerOpen(false);
         
-        // Buscar automáticamente cuando se escanea un código
-        router.push(`/?query=${encodeURIComponent(code)}`);
+        // Buscar el item en la base de datos
+        const item = await findItemByBarcode(code);
+        setScanResult({ barcode: code, item });
+    };
+
+    const handleCloseScanResult = () => {
+        setScanResult(null);
     };
 
     return (
@@ -138,6 +145,14 @@ export function SearchBar() {
                 <BarcodeScanner
                     onCodeScanned={handleBarcodeScanned}
                     onClose={() => setScannerOpen(false)}
+                />
+            )}
+
+            {scanResult && (
+                <BarcodeScanResult
+                    barcode={scanResult.barcode}
+                    item={scanResult.item}
+                    onClose={handleCloseScanResult}
                 />
             )}
         </>

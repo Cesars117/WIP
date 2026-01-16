@@ -6,9 +6,14 @@ import { ArrowLeft } from "lucide-react";
 
 export const dynamic = 'force-dynamic'
 
-export default async function NewItemPage() {
+export default async function NewItemPage({
+    searchParams
+}: {
+    searchParams: { barcode?: string }
+}) {
     const categories = await db.category.findMany({ orderBy: { name: 'asc' } });
     const locations = await db.location.findMany({ orderBy: { name: 'asc' } });
+    const preloadedBarcode = searchParams.barcode || null;
 
     return (
         <main className="container" style={{ paddingTop: "4rem", paddingBottom: "4rem" }}>
@@ -24,6 +29,7 @@ export default async function NewItemPage() {
                 categories={categories}
                 locations={locations}
                 createItem={createItem}
+                preloadedBarcode={preloadedBarcode}
             />
         </main>
     );
