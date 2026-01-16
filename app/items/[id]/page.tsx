@@ -1,6 +1,7 @@
 import { getItemById, updateItem, deleteItem } from '@/app/actions'
 import { redirect } from 'next/navigation'
 import db from '@/lib/db'
+import { DeleteItemForm } from '@/app/components/DeleteItemForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -161,19 +162,7 @@ export default async function EditItemPage({ params }: Props) {
         </button>
       </form>
 
-      <form action={deleteItem} onSubmit={(e) => {
-        if (!confirm('Are you sure you want to delete this item?')) {
-          e.preventDefault()
-        }
-      }}>
-        <input type="hidden" name="id" value={item.id} />
-        <button
-          type="submit"
-          className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-        >
-          Delete Item
-        </button>
-      </form>
+      <DeleteItemForm itemId={item.id} deleteItem={deleteItem} />
     </div>
   )
 }
