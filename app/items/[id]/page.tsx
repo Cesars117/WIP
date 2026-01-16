@@ -1,5 +1,6 @@
 import { getItemById, updateItem, deleteItem } from '@/app/actions'
 import { redirect } from 'next/navigation'
+import db from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,7 +10,11 @@ interface Props {
 
 export default async function EditItemPage({ params }: Props) {
   const { id } = await params
-  const item = await getItemById(parseInt(id))
+  const [item, categories, locations] = await Promise.all([
+    getItemById(parseInt(id)),
+    db.category.findMany({ orderBy: { name: 'asc' } }),
+    db.location.findMany({ orderBy: { name: 'asc' } })
+  ])
 
   if (!item) {
     redirect('/')
@@ -55,9 +60,11 @@ export default async function EditItemPage({ params }: Props) {
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Select a category</option>
-            <option value="1">Equipment</option>
-            <option value="2">Material</option>
-            <option value="3">Tool</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -71,12 +78,11 @@ export default async function EditItemPage({ params }: Props) {
             className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Select a location</option>
-            <option value="1">8th Floor - Box 1</option>
-            <option value="2">8th Floor - Box 2</option>
-            <option value="3">8th Floor - Personal Milwaukee Box</option>
-            <option value="4">8th Floor - Mesa Principal</option>
-            <option value="5">8th Floor - Area General</option>
-            <option value="6">Vehicle 1</option>
+            {locations.map((location) => (
+              <option key={location.id} value={location.id}>
+                {location.name}
+              </option>
+            ))}
           </select>
         </div>
 
