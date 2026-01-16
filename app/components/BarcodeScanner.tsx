@@ -49,10 +49,22 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
     try {
       setError(null);
       setPermissionStatus('prompt');
+      console.log('🎥 Iniciando proceso de acceso a cámara...');
+      
+      // Verificar si getUserMedia está disponible
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('getUserMedia no está disponible en este navegador');
+      }
       
       // Verificar primero el estado de los permisos
-      const permissionState = await checkCameraPermissions();
-      console.log('Estado de permisos de cámara:', permissionState);
+      let permissionState = 'prompt';
+      try {
+        const permissions = await navigator.permissions.query({ name: 'camera' as PermissionName });
+        permissionState = permissions.state;
+        console.log('📋 Estado de permisos de cámara:', permissionState);
+      } catch (permError) {
+        console.log('⚠️ No se pueden verificar permisos, procediendo con solicitud directa');
+      }
       
       if (permissionState === 'denied') {
         setPermissionStatus('denied');
@@ -60,16 +72,29 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
         return;
       }
       
-      // Solicitar permisos de cámara y mantener el stream
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: { ideal: 'environment' }, // Cámara trasera preferida, pero no requerida
-          width: { ideal: 1280, min: 640 },
-          height: { ideal: 720, min: 480 }
-        } 
-      });
+      // Intentar con configuración básica primero
+      let stream: MediaStream;
+      try {
+        console.log('🎯 Intentando acceso a cámara con configuración básica...');
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: true  // Configuración más simple para mayor compatibilidad
+        });
+        console.log('✅ Acceso a cámara básico exitoso');
+      } catch (basicError) {
+        console.log('⚠️ Acceso básico falló, intentando con configuración específica...');
+        // Si falla la configuración básica, intentar con configuración específica
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'environment', // Sin 'ideal', más directo
+            width: { min: 320, ideal: 640 },
+            height: { min: 240, ideal: 480 }
+          } 
+        });
+        console.log('✅ Acceso a cámara con configuración específica exitoso');
+      }
       
       setPermissionStatus('granted');
+      console.log('📹 Stream obtenido, configurando video element...');
       
       // Asignar el stream al video element
       if (videoRef.current) {
@@ -90,69 +115,86 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
           
           const handleLoadedMetadata = async () => {
             try {
+              console.log('🎬 Video metadata cargada, iniciando reproducción...');
               await video.play();
-              console.log('Video started successfully');
+              console.log('✅ Video reproduciendo correctamente');
               setIsScanning(true);
               setVideoReady(true);
               resolve();
             } catch (playError) {
-              console.error('Error playing video:', playError);
+              console.error('❌ Error reproduciendo video:', playError);
               reject(playError);
             }
           };
           
           video.onloadedmetadata = handleLoadedMetadata;
           
-          // Timeout fallback
+          // Timeout fallback más generoso
           setTimeout(() => {
+            console.log('⏰ Timeout de video, verificando estado...');
             if (video.readyState >= 2) { // HAVE_CURRENT_DATA
+              console.log('📹 Video listo por timeout fallback');
               handleLoadedMetadata();
+            } else {
+              console.log('❌ Video no está listo después del timeout');
+              reject(new Error('Video no se cargó a tiempo'));
             }
-          }, 100);
+          }, 1000); // Aumentado a 1 segundo
         });
+      } else {
+        throw new Error('Video element no encontrado');
       }
       
       // Inicializar el lector de códigos después de que el video esté funcionando
       codeReader.current = new BrowserMultiFormatReader();
+      console.log('🔍 Iniciando lector de códigos...');
       
       // Esperar un poco más para asegurar que el video esté renderizado
       setTimeout(async () => {
         try {
+          console.log('🚀 Comenzando escaneo de códigos...');
           // Comenzar el escaneo usando el elemento de video
           await codeReader.current?.decodeFromVideoElement(
             videoRef.current!,
             (result, error) => {
               if (result) {
                 const scannedText = result.getText();
-                console.log('Código escaneado:', scannedText);
+                console.log('🎯 Código escaneado:', scannedText);
                 onCodeScanned(scannedText);
                 stopScanner();
               }
               if (error && error.name !== 'NotFoundException') {
-                console.warn('Error de escaneo:', error);
+                console.warn('⚠️ Error de escaneo:', error);
               }
             }
           );
+          console.log('✅ Escáner iniciado correctamente');
         } catch (scanError) {
-          console.error('Error starting scanner:', scanError);
+          console.error('❌ Error starting scanner:', scanError);
           setError('Error al inicializar el escáner. Intenta de nuevo.');
         }
-      }, 500);
+      }, 1000); // Aumentado a 1 segundo
       
     } catch (err) {
-      console.error('Error al acceder a la cámara:', err);
+      console.error('❌ Error al acceder a la cámara:', err);
       const error = err as Error;
       setPermissionStatus('denied');
       
-      // Mensajes de error más específicos
+      // Mensajes de error más específicos y detallados
+      console.log('🔍 Analizando tipo de error:', error.name, error.message);
+      
       if (error.name === 'NotAllowedError') {
-        setError('Permisos de cámara denegados. Permite el acceso y vuelve a intentar.');
+        setError('Permisos de cámara denegados. Haz clic en "Permitir" cuando tu navegador lo solicite.');
       } else if (error.name === 'NotFoundError') {
-        setError('No se encontró ninguna cámara. Verifica que tu dispositivo tenga una cámara.');
+        setError('No se encontró ninguna cámara en tu dispositivo.');
       } else if (error.name === 'NotSupportedError') {
-        setError('La cámara no es compatible con este navegador.');
+        setError('Tu navegador no es compatible con el acceso a la cámara.');
+      } else if (error.name === 'OverconstrainedError') {
+        setError('La cámara no cumple con los requisitos. Intenta con una cámara diferente.');
+      } else if (error.message.includes('getUserMedia')) {
+        setError('Tu navegador no soporta acceso a cámara. Prueba con Chrome, Firefox o Safari.');
       } else {
-        setError('No se pudo acceder a la cámara. Verifica los permisos y vuelve a intentar.');
+        setError(`Error de cámara: ${error.message || 'Problema desconocido'}. Verifica los permisos y vuelve a intentar.`);
       }
     }
   }, [onCodeScanned, checkCameraPermissions]); // eslint-disable-line react-hooks/exhaustive-deps
