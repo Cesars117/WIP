@@ -94,13 +94,21 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
           alignItems: 'center',
           flexShrink: 0
         }}>
-          <div>
-            <h2 style={{ margin: '0 0 4px 0', fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)' }}>
-              {t('dashboard.searchResults')}
+          <div style={{ flex: 1 }}>
+            {items.length > 1 && (
+              <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 500 }}>
+                {items.length} results found for:
+              </p>
+            )}
+            <h2 style={{ 
+              margin: 0, 
+              fontSize: items.length === 1 ? '2rem' : '1.75rem', 
+              fontWeight: 700, 
+              color: 'var(--text)',
+              lineHeight: '1.2'
+            }}>
+              {query}
             </h2>
-            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              {items.length} {items.length === 1 ? 'result found' : 'results found'} for &quot;{query}&quot;
-            </p>
           </div>
           <button
             onClick={onClose}
@@ -111,7 +119,8 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
               cursor: 'pointer',
               padding: '8px',
               borderRadius: '8px',
-              transition: 'background 0.2s'
+              transition: 'background 0.2s',
+              flexShrink: 0
             }}
             onMouseOver={(e) => e.currentTarget.style.background = 'var(--background)'}
             onMouseOut={(e) => e.currentTarget.style.background = 'none'}
@@ -383,7 +392,7 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     margin: 0, 
                     fontSize: items.length === 1 ? '1.75rem' : '1rem', 
                     fontWeight: 700, 
-                    color: 'var(--text)',
+                    color: '#1a1a1a',
                     lineHeight: '1.2'
                   }}>
                     {selectedItem.category.name}
@@ -423,7 +432,7 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     margin: 0, 
                     fontSize: items.length === 1 ? '1.75rem' : '1rem', 
                     fontWeight: 700, 
-                    color: 'var(--text)',
+                    color: '#1a1a1a',
                     lineHeight: '1.2'
                   }}>
                     {selectedItem.location.name}
@@ -465,7 +474,7 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     margin: 0, 
                     fontSize: items.length === 1 ? '2.5rem' : '1.5rem', 
                     fontWeight: 700, 
-                    color: 'var(--text)',
+                    color: '#1a1a1a',
                     lineHeight: '1'
                   }}>
                     {selectedItem.quantity}
