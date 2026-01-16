@@ -146,7 +146,8 @@ const enTranslations = {
     unit: 'Unit',
     box: 'Box',
     unitsPerBox: 'Units per Box',
-    totalUnits: 'Total Units',
+    totalUnits: 'Total units will be calculated automatically: Quantity × Units per Box',
+    directUnits: 'Will be registered directly as individual units',
   },
   editItem: {
     title: 'Edit Item',
@@ -273,7 +274,8 @@ const esTranslations = {
     unit: 'Unidad',
     box: 'Caja',
     unitsPerBox: 'Unidades por Caja',
-    totalUnits: 'Unidades Totales',
+    totalUnits: 'El total de unidades se calculará automáticamente: Cantidad × Unidades por Caja',
+    directUnits: 'Se registrará directamente como unidades individuales',
   },
   editItem: {
     title: 'Editar Item',

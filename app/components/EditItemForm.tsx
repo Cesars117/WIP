@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ScanButton } from './ScanButton';
 import { BarcodeGeneratorButton } from './BarcodeGeneratorButton';
+import { useLanguage } from '@/app/contexts/LanguageContext';
 
 interface EditItemFormProps {
     item: {
@@ -23,6 +24,7 @@ interface EditItemFormProps {
 }
 
 export function EditItemForm({ item, categories, locations, updateItem }: EditItemFormProps) {
+    const { t } = useLanguage();
     const [barcode, setBarcode] = useState(item.barcode || '');
     const [unitType, setUnitType] = useState(item.unitType || 'units');
     const [categoryId, setCategoryId] = useState(item.categoryId);
@@ -40,26 +42,26 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
             <input type="hidden" name="id" value={item.id} />
             
             <div>
-                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Nombre del Artículo</label>
+                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.name')}</label>
                 <input
                     name="name"
                     type="text"
                     required
                     defaultValue={item.name}
-                    placeholder="Ej. Taladro Percutor 20V"
+                    placeholder={t('newItem.namePlaceholder')}
                     style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
                 />
             </div>
 
             <div>
-                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Código de Barras</label>
+                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.barcode')}</label>
                 <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start", flexWrap: "wrap" }}>
                     <input
                         name="barcode"
                         value={barcode}
                         onChange={(e) => setBarcode(e.target.value)}
                         type="text"
-                        placeholder="Escanea o ingresa el código"
+                        placeholder={t('newItem.barcodePlaceholder')}
                         style={{ 
                             flex: 1, 
                             minWidth: "200px",
@@ -78,15 +80,15 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
                 </div>
                 <small style={{ color: "var(--text-secondary)", fontSize: "0.875rem", display: "block", marginTop: "0.5rem" }}>
                     {barcode 
-                        ? `Código actual: ${barcode}` 
-                        : "Sin código - Usa \"📷 Escanear\" o \"Generar\" para asignar uno"
+                        ? `${t('editItem.currentBarcode')}: ${barcode}` 
+                        : t('editItem.noBarcode')
                     }
                 </small>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
                 <div>
-                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Categoría</label>
+                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.category')}</label>
                     <select 
                         name="categoryId" 
                         value={categoryId}
@@ -101,7 +103,7 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
                 </div>
 
                 <div>
-                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Ubicación</label>
+                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.location')}</label>
                     <select name="locationId" defaultValue={item.locationId} required style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
                         {locations.map(loc => (
                             <option key={loc.id} value={loc.id}>{loc.name}</option>
@@ -112,7 +114,7 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
                 <div>
-                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Cantidad</label>
+                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.quantity')}</label>
                     <input 
                         name="quantity" 
                         type="number" 
@@ -124,12 +126,12 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
                 </div>
 
                 <div>
-                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Estado</label>
+                    <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.status')}</label>
                     <select name="status" defaultValue={item.status} required style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}>
-                        <option value="AVAILABLE">Disponible</option>
-                        <option value="IN_USE">En Uso</option>
-                        <option value="MAINTENANCE">Mantenimiento</option>
-                        <option value="LOST">Perdido</option>
+                        <option value="AVAILABLE">{t('status.AVAILABLE')}</option>
+                        <option value="IN_USE">{t('status.IN_USE')}</option>
+                        <option value="MAINTENANCE">{t('status.MAINTENANCE')}</option>
+                        <option value="LOST">{t('status.LOST')}</option>
                     </select>
                 </div>
             </div>
@@ -137,25 +139,25 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
             {/* Material Configuration - Show if Material category is selected */}
             {isMaterial && (
                 <div style={{ padding: "16px", background: "rgba(99, 102, 241, 0.05)", borderRadius: "var(--radius-sm)", border: "1px solid rgba(99, 102, 241, 0.2)" }}>
-                    <h4 style={{ margin: "0 0 12px 0", color: "var(--primary)", fontSize: "0.875rem", fontWeight: 600 }}>⚙️ Configuración de Material</h4>
+                    <h4 style={{ margin: "0 0 12px 0", color: "var(--primary)", fontSize: "0.875rem", fontWeight: 600 }}>⚙️ {t('newItem.materialConfig')}</h4>
                     
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
                         <div>
-                            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Tipo de Unidad</label>
+                            <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.unitType')}</label>
                             <select 
                                 name="unitType" 
                                 value={unitType}
                                 onChange={(e) => setUnitType(e.target.value)}
                                 style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
                             >
-                                <option value="units">Unidades</option>
-                                <option value="boxes">Cajas</option>
+                                <option value="units">{t('newItem.unit')}</option>
+                                <option value="boxes">{t('newItem.box')}</option>
                             </select>
                         </div>
 
                         {unitType === 'boxes' && (
                             <div>
-                                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Unidades por Caja</label>
+                                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.unitsPerBox')}</label>
                                 <input 
                                     name="unitsPerBox" 
                                     type="number" 
@@ -169,27 +171,27 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
 
                     <small style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
                         {unitType === 'boxes' 
-                            ? 'El total de unidades se calculará automáticamente: Cantidad × Unidades por Caja'
-                            : 'Se registrará directamente como unidades individuales'
+                            ? t('newItem.totalUnits')
+                            : t('newItem.directUnits')
                         }
                     </small>
                 </div>
             )}
 
             <div>
-                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Descripción (Opcional)</label>
+                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.description')}</label>
                 <textarea 
                     name="description" 
                     rows={3} 
                     defaultValue={item.description || ''}
-                    placeholder="Información adicional sobre el artículo..." 
+                    placeholder={t('newItem.descriptionPlaceholder')} 
                     style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none", resize: "vertical", minHeight: "80px" }}
                 />
             </div>
 
             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 <button type="submit" className="btn btn-primary" style={{ padding: "12px 24px", fontSize: "1rem", fontWeight: 600, flex: 1, minWidth: "180px" }}>
-                    💾 Guardar Cambios
+                    💾 {t('editItem.updateItem')}
                 </button>
             </div>
         </form>
