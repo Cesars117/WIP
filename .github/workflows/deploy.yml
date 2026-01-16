@@ -55,6 +55,11 @@ jobs:
         env:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       
+      - name: Seed production database
+        run: node add-data.mjs
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      
       - name: Deploy to Vercel
         run: |
           if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
@@ -90,6 +95,11 @@ jobs:
         env:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       - run: npm run build
+      
+      - name: Seed production database
+        run: node add-data.mjs
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       
       - name: Prepare deployment package
         run: |
