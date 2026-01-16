@@ -122,60 +122,97 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       setPermissionStatus('granted');
       console.log('📹 Stream obtenido, configurando video element...');
       
-      // Asignar el stream al video element
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+      // Verificar que el video element existe antes de continuar
+      if (!videoRef.current) {
+        console.error('❌ Video element no encontrado en el DOM');
         
-        // Configurar el video para autoplay
-        videoRef.current.muted = true;
-        videoRef.current.playsInline = true;
-        videoRef.current.autoplay = true;
-        
-        // En móviles, agregar más atributos para compatibilidad
+        // En móviles, esperar un poco más para que el DOM se renderice
         if (isMobile()) {
-          videoRef.current.setAttribute('playsinline', 'true');
-          videoRef.current.setAttribute('webkit-playsinline', 'true');
+          console.log('📱 Esperando a que el video element se renderice en móvil...');
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
         
-        // Esperar a que el video esté listo y forzar reproducción
-        await new Promise<void>((resolve, reject) => {
-          const video = videoRef.current;
-          if (!video) {
-            reject(new Error('Video element not found'));
-            return;
+        if (!videoRef.current) {
+          throw new Error('Video element no disponible - problema de renderizado');
+        }
+      }
+      
+      console.log('✅ Video element confirmado, asignando stream...');
+      
+      // Asignar el stream al video element
+      const video = videoRef.current;
+      video.srcObject = stream;
+      
+      // Configurar el video para autoplay
+      video.muted = true;
+      video.playsInline = true;
+      video.autoplay = true;
+      
+      // En móviles, agregar más atributos para compatibilidad
+      if (isMobile()) {
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+        video.setAttribute('muted', 'true');
+      }
+      
+      console.log('🎬 Configuración de video completada, esperando carga...');
+      
+      // Esperar a que el video esté listo y forzar reproducción
+      await new Promise<void>((resolve, reject) => {
+        // Verificar nuevamente que el video existe
+        const currentVideo = videoRef.current;
+        if (!currentVideo) {
+          reject(new Error('Video element perdido durante configuración'));
+          return;
+        }
+        
+        const handleLoadedMetadata = async () => {
+          try {
+            console.log('🎬 Video metadata cargada, iniciando reproducción...');
+            await currentVideo.play();
+            console.log('✅ Video reproduciendo correctamente');
+            setIsScanning(true);
+            setVideoReady(true);
+            resolve();
+          } catch (playError) {
+            console.error('❌ Error reproduciendo video:', playError);
+            reject(playError);
           }
-          
-          const handleLoadedMetadata = async () => {
-            try {
-              console.log('🎬 Video metadata cargada, iniciando reproducción...');
-              await video.play();
-              console.log('✅ Video reproduciendo correctamente');
-              setIsScanning(true);
-              setVideoReady(true);
-              resolve();
-            } catch (playError) {
-              console.error('❌ Error reproduciendo video:', playError);
-              reject(playError);
+        };
+        
+        // Agregar event listeners
+        currentVideo.onloadedmetadata = handleLoadedMetadata;
+        
+        // Para móviles, también escuchar otros eventos
+        if (isMobile()) {
+          currentVideo.oncanplay = () => {
+            console.log('📱 Video canplay event triggered');
+            if (currentVideo.readyState >= 2) {
+              handleLoadedMetadata();
             }
           };
-          
-          video.onloadedmetadata = handleLoadedMetadata;
-          
-          // Timeout más largo para móviles
-          const timeout = isMobile() ? 3000 : 1000;
-          setTimeout(() => {
-            console.log(`⏰ Timeout de video (${timeout}ms), verificando estado...`);
-            if (video.readyState >= 2) { // HAVE_CURRENT_DATA
-              console.log('📹 Video listo por timeout fallback');
-              handleLoadedMetadata();
-            } else {
-              console.log('❌ Video no está listo después del timeout');
-              reject(new Error('Video no se cargó a tiempo'));
-            }
-          }, timeout);
-        });
-      } else {
-        throw new Error('Video element no encontrado');
+        }
+        
+        // Timeout más largo para móviles
+        const timeout = isMobile() ? 5000 : 1000; // 5 segundos para móvil
+        setTimeout(() => {
+          console.log(`⏰ Timeout de video (${timeout}ms), verificando estado...`);
+          if (currentVideo.readyState >= 2) { // HAVE_CURRENT_DATA
+            console.log('📹 Video listo por timeout fallback');
+            handleLoadedMetadata();
+          } else {
+            console.log('❌ Video no está listo después del timeout');
+            reject(new Error(`Video no se cargó en ${timeout}ms`));
+          }
+        }, timeout);
+      });
+      
+      console.log('✅ Video element configurado exitosamente');
+      
+      // Verificar que el video element siga disponible antes del scanner
+      if (!videoRef.current) {
+        console.error('❌ Video element no disponible para iniciar scanner');
+        throw new Error('Video element no encontrado para inicializar scanner');
       }
       
       // Inicializar el lector de códigos después de que el video esté funcionando
@@ -183,13 +220,20 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       console.log('🔍 Iniciando lector de códigos...');
       
       // Timeout más largo para móviles
-      const scanTimeout = isMobile() ? 2000 : 1000;
+      const scanTimeout = isMobile() ? 3000 : 1000; // Aumentado a 3 segundos para móvil
       setTimeout(async () => {
         try {
+          // Verificar una vez más que el video element existe
+          if (!videoRef.current) {
+            console.error('❌ Video element desapareció antes del timeout');
+            setError('Error: Video element no disponible para escaneo');
+            return;
+          }
+          
           console.log('🚀 Comenzando escaneo de códigos...');
           // Comenzar el escaneo usando el elemento de video
           await codeReader.current?.decodeFromVideoElement(
-            videoRef.current!,
+            videoRef.current,
             (result, error) => {
               if (result) {
                 const scannedText = result.getText();
@@ -243,6 +287,12 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
     const init = async () => {
       // Only auto-initialize if we haven't been denied before
       if (permissionStatus !== 'denied') {
+        // En móviles, esperar un poco más para que el DOM se renderice completamente
+        if (isMobile()) {
+          console.log('📱 Esperando renderizado del DOM en móvil...');
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
         await initializeScanner();
       }
     };
