@@ -169,11 +169,22 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
                   {/* Quantity */}
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)' }}>
-                      {item.quantity}
+                      {item.unitType === 'BOX' && item.unitsPerBox 
+                        ? (item.totalUnits || (item.quantity * item.unitsPerBox))
+                        : item.quantity
+                      }
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                      {t('common.quantity')}
+                      {item.unitType === 'BOX' && item.unitsPerBox 
+                        ? t('dashboard.units')
+                        : t('common.quantity')
+                      }
                     </div>
+                    {item.unitType === 'BOX' && item.unitsPerBox && (
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                        {item.quantity} cajas
+                      </div>
+                    )}
                   </div>
 
                   {/* Status */}
