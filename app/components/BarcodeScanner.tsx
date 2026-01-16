@@ -14,6 +14,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
+  const [videoReady, setVideoReady] = useState(false);
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
 
   const stopScanner = useCallback(() => {
@@ -26,6 +27,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       codeReader.current = null;
     }
     setIsScanning(false);
+    setVideoReady(false);
     setPermissionStatus('prompt');
     if (videoRef.current) {
       videoRef.current.srcObject = null;
@@ -91,6 +93,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
               await video.play();
               console.log('Video started successfully');
               setIsScanning(true);
+              setVideoReady(true);
               resolve();
             } catch (playError) {
               console.error('Error playing video:', playError);
@@ -301,7 +304,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
               borderRadius: '4px',
               fontSize: '0.75rem'
             }}>
-              {videoRef.current && videoRef.current.readyState >= 2 ? '📹 Video activo' : '⏳ Cargando...'}
+              {videoReady ? '📹 Video activo' : '⏳ Cargando...'}
             </div>
           </>
         )}
