@@ -214,8 +214,12 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                       }}>
                         {item.name}
                       </h3>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                        {item.category.name}
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <div>{item.category.name}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <MapPin size={12} />
+                          {item.location.name}
+                        </div>
                       </div>
                     </div>
                   </div>
