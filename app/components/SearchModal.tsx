@@ -28,7 +28,8 @@ interface SearchModalProps {
 
 export function SearchModal({ items, query, onClose }: SearchModalProps) {
   const { t } = useLanguage()
-  const [selectedItem, setSelectedItem] = useState<Item | null>(null)
+  // Auto-select first item if there's only one (from table click)
+  const [selectedItem, setSelectedItem] = useState<Item | null>(() => items.length === 1 ? items[0] : null)
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -269,17 +270,17 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                   <div style={{
                     background: 'var(--primary-light)',
                     color: 'var(--primary)',
-                    width: '64px',
-                    height: '64px',
+                    width: items.length === 1 ? '80px' : '64px',
+                    height: items.length === 1 ? '80px' : '64px',
                     borderRadius: '12px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <Package size={32} />
+                    <Package size={items.length === 1 ? 40 : 32} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <h3 style={{ margin: '0 0 8px 0', fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)' }}>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: items.length === 1 ? '2rem' : '1.5rem', fontWeight: 600, color: 'var(--text)' }}>
                       {selectedItem.name}
                     </h3>
                     <div style={{
@@ -331,19 +332,19 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
               {/* Details Grid */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
+                gridTemplateColumns: items.length === 1 ? '1fr' : 'repeat(2, 1fr)',
                 gap: '16px',
                 marginBottom: '24px'
               }}>
                 <div style={{
                   background: 'var(--background)',
-                  padding: '16px',
+                  padding: items.length === 1 ? '20px' : '16px',
                   borderRadius: '12px'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <Tag size={16} style={{ color: 'var(--text-secondary)' }} />
+                    <Tag size={items.length === 1 ? 20 : 16} style={{ color: 'var(--text-secondary)' }} />
                     <label style={{
-                      fontSize: '0.75rem',
+                      fontSize: items.length === 1 ? '0.875rem' : '0.75rem',
                       fontWeight: 600,
                       color: 'var(--text-secondary)',
                       textTransform: 'uppercase'
@@ -351,20 +352,20 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                       {t('common.category')}
                     </label>
                   </div>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text)' }}>
+                  <p style={{ margin: 0, fontSize: items.length === 1 ? '1.25rem' : '1rem', fontWeight: 600, color: 'var(--text)' }}>
                     {selectedItem.category.name}
                   </p>
                 </div>
 
                 <div style={{
                   background: 'var(--background)',
-                  padding: '16px',
+                  padding: items.length === 1 ? '20px' : '16px',
                   borderRadius: '12px'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <MapPin size={16} style={{ color: 'var(--text-secondary)' }} />
+                    <MapPin size={items.length === 1 ? 20 : 16} style={{ color: 'var(--text-secondary)' }} />
                     <label style={{
-                      fontSize: '0.75rem',
+                      fontSize: items.length === 1 ? '0.875rem' : '0.75rem',
                       fontWeight: 600,
                       color: 'var(--text-secondary)',
                       textTransform: 'uppercase'
@@ -372,18 +373,18 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                       {t('common.location')}
                     </label>
                   </div>
-                  <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--text)' }}>
+                  <p style={{ margin: 0, fontSize: items.length === 1 ? '1.25rem' : '1rem', fontWeight: 600, color: 'var(--text)' }}>
                     {selectedItem.location.name}
                   </p>
                 </div>
 
                 <div style={{
                   background: 'var(--background)',
-                  padding: '16px',
+                  padding: items.length === 1 ? '20px' : '16px',
                   borderRadius: '12px'
                 }}>
                   <label style={{
-                    fontSize: '0.75rem',
+                    fontSize: items.length === 1 ? '0.875rem' : '0.75rem',
                     fontWeight: 600,
                     color: 'var(--text-secondary)',
                     textTransform: 'uppercase',
@@ -392,7 +393,7 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                   }}>
                     {t('common.quantity')}
                   </label>
-                  <p style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: 'var(--text)' }}>
+                  <p style={{ margin: 0, fontSize: items.length === 1 ? '2rem' : '1.5rem', fontWeight: 700, color: 'var(--text)' }}>
                     {selectedItem.quantity}
                   </p>
                 </div>
