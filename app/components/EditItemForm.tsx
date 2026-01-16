@@ -91,7 +91,7 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
                     <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.category')}</label>
                     <select 
                         name="categoryId" 
-                        value={categoryId}
+                        defaultValue={item.categoryId}
                         onChange={(e) => setCategoryId(parseInt(e.target.value))}
                         required 
                         style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
@@ -146,7 +146,7 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
                             <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>{t('newItem.unitType')}</label>
                             <select 
                                 name="unitType" 
-                                value={unitType}
+                                defaultValue={item.unitType || 'units'}
                                 onChange={(e) => setUnitType(e.target.value)}
                                 style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
                             >
