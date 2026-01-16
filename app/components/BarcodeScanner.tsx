@@ -15,6 +15,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
   const [error, setError] = useState<string | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
   const [videoReady, setVideoReady] = useState(false);
+  const [videoElementMounted, setVideoElementMounted] = useState(false);
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
 
   const stopScanner = useCallback(() => {
@@ -28,10 +29,42 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
     }
     setIsScanning(false);
     setVideoReady(false);
+    setVideoElementMounted(false);
     setPermissionStatus('prompt');
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+  }, []);
+
+  const waitForVideoElement = useCallback(async (maxWaitMs = 5000): Promise<HTMLVideoElement> => {
+    const startTime = Date.now();
+    const checkInterval = 100;
+    
+    console.log('⏳ Esperando que el video element esté disponible...');
+    
+    return new Promise((resolve, reject) => {
+      const checkVideo = () => {
+        const elapsed = Date.now() - startTime;
+        
+        if (videoRef.current) {
+          console.log(`✅ Video element encontrado después de ${elapsed}ms`);
+          setVideoElementMounted(true);
+          resolve(videoRef.current);
+          return;
+        }
+        
+        if (elapsed >= maxWaitMs) {
+          console.error(`❌ Video element no disponible después de ${maxWaitMs}ms`);
+          reject(new Error(`Video element no se montó en ${maxWaitMs}ms`));
+          return;
+        }
+        
+        console.log(`⏳ Esperando video element... ${elapsed}ms`);
+        setTimeout(checkVideo, checkInterval);
+      };
+      
+      checkVideo();
+    });
   }, []);
 
   const isMobile = useCallback(() => {
@@ -62,6 +95,11 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       setPermissionStatus('prompt');
       console.log('🎥 Iniciando proceso de acceso a cámara...');
       console.log('📱 Es móvil:', isMobile());
+      
+      // Primero esperar a que el video element esté disponible
+      const waitTime = isMobile() ? 8000 : 5000; // Más tiempo en móviles
+      const video = await waitForVideoElement(waitTime);
+      console.log('✅ Video element confirmado y disponible');
       
       // Verificar si getUserMedia está disponible
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -122,25 +160,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       setPermissionStatus('granted');
       console.log('📹 Stream obtenido, configurando video element...');
       
-      // Verificar que el video element existe antes de continuar
-      if (!videoRef.current) {
-        console.error('❌ Video element no encontrado en el DOM');
-        
-        // En móviles, esperar un poco más para que el DOM se renderice
-        if (isMobile()) {
-          console.log('📱 Esperando a que el video element se renderice en móvil...');
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-        
-        if (!videoRef.current) {
-          throw new Error('Video element no disponible - problema de renderizado');
-        }
-      }
-      
-      console.log('✅ Video element confirmado, asignando stream...');
-      
-      // Asignar el stream al video element
-      const video = videoRef.current;
+      // Ya tenemos el video element validado, proceder directamente
       video.srcObject = stream;
       
       // Configurar el video para autoplay
@@ -159,17 +179,10 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       
       // Esperar a que el video esté listo y forzar reproducción
       await new Promise<void>((resolve, reject) => {
-        // Verificar nuevamente que el video existe
-        const currentVideo = videoRef.current;
-        if (!currentVideo) {
-          reject(new Error('Video element perdido durante configuración'));
-          return;
-        }
-        
         const handleLoadedMetadata = async () => {
           try {
             console.log('🎬 Video metadata cargada, iniciando reproducción...');
-            await currentVideo.play();
+            await video.play();
             console.log('✅ Video reproduciendo correctamente');
             setIsScanning(true);
             setVideoReady(true);
@@ -181,23 +194,23 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
         };
         
         // Agregar event listeners
-        currentVideo.onloadedmetadata = handleLoadedMetadata;
+        video.onloadedmetadata = handleLoadedMetadata;
         
         // Para móviles, también escuchar otros eventos
         if (isMobile()) {
-          currentVideo.oncanplay = () => {
+          video.oncanplay = () => {
             console.log('📱 Video canplay event triggered');
-            if (currentVideo.readyState >= 2) {
+            if (video.readyState >= 2) {
               handleLoadedMetadata();
             }
           };
         }
         
         // Timeout más largo para móviles
-        const timeout = isMobile() ? 5000 : 1000; // 5 segundos para móvil
+        const timeout = isMobile() ? 7000 : 3000; // Aumentado para móviles
         setTimeout(() => {
           console.log(`⏰ Timeout de video (${timeout}ms), verificando estado...`);
-          if (currentVideo.readyState >= 2) { // HAVE_CURRENT_DATA
+          if (video.readyState >= 2) { // HAVE_CURRENT_DATA
             console.log('📹 Video listo por timeout fallback');
             handleLoadedMetadata();
           } else {
@@ -209,31 +222,18 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       
       console.log('✅ Video element configurado exitosamente');
       
-      // Verificar que el video element siga disponible antes del scanner
-      if (!videoRef.current) {
-        console.error('❌ Video element no disponible para iniciar scanner');
-        throw new Error('Video element no encontrado para inicializar scanner');
-      }
-      
       // Inicializar el lector de códigos después de que el video esté funcionando
       codeReader.current = new BrowserMultiFormatReader();
       console.log('🔍 Iniciando lector de códigos...');
       
       // Timeout más largo para móviles
-      const scanTimeout = isMobile() ? 3000 : 1000; // Aumentado a 3 segundos para móvil
+      const scanTimeout = isMobile() ? 4000 : 2000; // Aumentado para móviles
       setTimeout(async () => {
         try {
-          // Verificar una vez más que el video element existe
-          if (!videoRef.current) {
-            console.error('❌ Video element desapareció antes del timeout');
-            setError('Error: Video element no disponible para escaneo');
-            return;
-          }
-          
+          // El video ya está validado, proceder con el scanner
           console.log('🚀 Comenzando escaneo de códigos...');
-          // Comenzar el escaneo usando el elemento de video
           await codeReader.current?.decodeFromVideoElement(
-            videoRef.current,
+            video, // Usar el video validado
             (result, error) => {
               if (result) {
                 const scannedText = result.getText();
@@ -280,25 +280,22 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
         setError(`Error de cámara en ${deviceType}: ${error.message || 'Problema desconocido'}. Verifica los permisos y vuelve a intentar.`);
       }
     }
-  }, [onCodeScanned, checkCameraPermissions, isMobile]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onCodeScanned, checkCameraPermissions, isMobile, waitForVideoElement]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    // Initialize scanner when component mounts, but don't auto-retry
-    const init = async () => {
-      // Only auto-initialize if we haven't been denied before
+    // En lugar de inicializar automáticamente, esperar interacción del usuario
+    // Esto da más tiempo al DOM para renderizarse completamente
+    const timeoutId = setTimeout(() => {
       if (permissionStatus !== 'denied') {
-        // En móviles, esperar un poco más para que el DOM se renderice completamente
-        if (isMobile()) {
-          console.log('📱 Esperando renderizado del DOM en móvil...');
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        
-        await initializeScanner();
+        console.log('🚀 Iniciando scanner después del timeout de montaje');
+        initializeScanner();
       }
-    };
+    }, isMobile() ? 500 : 100); // Más delay para móviles
     
-    init();
-    return stopScanner;
+    return () => {
+      clearTimeout(timeoutId);
+      stopScanner();
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -412,7 +409,16 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
         ) : (
           <>
             <video
-              ref={videoRef}
+              ref={(el) => {
+                videoRef.current = el;
+                if (el) {
+                  console.log('📹 Video element montado en el DOM');
+                  setVideoElementMounted(true);
+                } else {
+                  console.log('❌ Video element desmontado del DOM');
+                  setVideoElementMounted(false);
+                }
+              }}
               style={{
                 width: '100%',
                 height: '100%',
@@ -435,7 +441,10 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
               borderRadius: '4px',
               fontSize: '0.75rem'
             }}>
-              {videoReady ? '📹 Video activo' : '⏳ Cargando...'}
+              {videoElementMounted 
+                ? (videoReady ? '📹 Video activo' : '⏳ Cargando...') 
+                : '❌ Element no montado'
+              }
             </div>
           </>
         )}
