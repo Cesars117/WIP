@@ -1,4 +1,4 @@
-import { Package, MapPin, Search, BarChart3, Plus, Edit } from "lucide-react";
+import { Package, MapPin, BarChart3, Plus, Edit } from "lucide-react";
 import { getDashboardStats, seedInitialData, getItems } from "./actions";
 import { SearchBar } from "./components/SearchBar";
 import Link from 'next/link';

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { BarcodeScanner } from './BarcodeScanner'
-import { Camera, ScanLine } from 'lucide-react'
+import { Camera } from 'lucide-react'
 
 interface ScanButtonProps {
   onScan: (barcode: string) => void

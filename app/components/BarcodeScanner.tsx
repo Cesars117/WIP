@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { BrowserMultiFormatReader } from '@zxing/browser'
 import { X, Camera, CameraOff } from 'lucide-react'
 
@@ -16,12 +16,23 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
   const [permissionStatus, setPermissionStatus] = useState<'prompt' | 'granted' | 'denied'>('prompt');
   const codeReader = useRef<BrowserMultiFormatReader | null>(null);
 
-  useEffect(() => {
-    initializeScanner();
-    return () => stopScanner();
+  const stopScanner = useCallback(() => {
+    if (codeReader.current) {
+      // Stop all video tracks
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+      codeReader.current = null;
+    }
+    setIsScanning(false);
+    setPermissionStatus('prompt');
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
   }, []);
 
-  const initializeScanner = async () => {
+  const initializeScanner = useCallback(async () => {
     try {
       setError(null);
       
@@ -37,8 +48,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       
       // Inicializar el lector de códigos
       codeReader.current = new BrowserMultiFormatReader();
-      
-      setIsScanning(true)
+      setIsScanning(true);
       
       // Comenzar el escaneo
       await codeReader.current.decodeFromVideoDevice(
@@ -62,22 +72,17 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       setPermissionStatus('denied');
       setError('No se pudo acceder a la cámara. Verifica los permisos.');
     }
-  }
+  }, [onCodeScanned]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const stopScanner = () => {
-    if (codeReader.current) {
-      // Stop all video tracks
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
-      }
-      codeReader.current = null;
-    }
-    setIsScanning(false);
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-  }
+  useEffect(() => {
+    // Initialize scanner when component mounts
+    const init = async () => {
+      await initializeScanner();
+    };
+    
+    init();
+    return stopScanner;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{

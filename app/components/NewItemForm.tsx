@@ -63,7 +63,7 @@ export function NewItemForm({ categories, locations, createItem }: NewItemFormPr
           </div>
         </div>
         <small style={{ color: "var(--text-secondary)", fontSize: "0.875rem", display: "block", marginTop: "0.5rem" }}>
-          Opcional - Debe ser único. Usa "📷 Escanear" para usar la cámara o "Generar" para crear uno automático.
+          Opcional - Debe ser único. Usa &quot;📷 Escanear&quot; para usar la cámara o &quot;Generar&quot; para crear uno automático.
         </small>
       </div>
 
