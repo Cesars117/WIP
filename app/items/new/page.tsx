@@ -4,6 +4,8 @@ import db from "@/lib/db";
 import Link from 'next/link';
 import { ArrowLeft } from "lucide-react";
 
+export const dynamic = 'force-dynamic'
+
 export default async function NewItemPage() {
     const categories = await db.category.findMany();
     const locations = await db.location.findMany();

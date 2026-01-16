@@ -1,6 +1,8 @@
 import { getItemById, updateItem, deleteItem } from '@/app/actions'
 import { redirect } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
 interface Props {
   params: Promise<{ id: string }>
 }
