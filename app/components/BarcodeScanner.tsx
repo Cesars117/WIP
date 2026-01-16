@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { BrowserMultiFormatReader } from '@zxing/browser'
+import { DecodeHintType, BarcodeFormat } from '@zxing/library'
 import { X, Camera, CameraOff } from 'lucide-react'
 
 interface BarcodeScannerProps {
@@ -222,9 +223,25 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
       
       console.log('✅ Video element configurado exitosamente');
       
-      // Inicializar el lector de códigos después de que el video esté funcionando
-      codeReader.current = new BrowserMultiFormatReader();
-      console.log('🔍 Iniciando lector de códigos...');
+      // Configurar hints para solo detectar códigos de barras 1D (más rápido)
+      const hints = new Map();
+      hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+        BarcodeFormat.EAN_13,        // Códigos EAN-13 (productos europeos)
+        BarcodeFormat.EAN_8,         // Códigos EAN-8 (productos pequeños)
+        BarcodeFormat.UPC_A,         // Códigos UPC-A (productos USA)
+        BarcodeFormat.UPC_E,         // Códigos UPC-E (productos pequeños USA)
+        BarcodeFormat.CODE_128,      // Code 128 (inventario, logística)
+        BarcodeFormat.CODE_39,       // Code 39 (industrial)
+        BarcodeFormat.CODE_93,       // Code 93 (logística)
+        BarcodeFormat.ITF,           // ITF (cajas y pallets)
+        BarcodeFormat.CODABAR        // Codabar (bibliotecas, bancos de sangre)
+        // NO incluimos QR_CODE ni otros formatos 2D para mayor velocidad
+      ]);
+      hints.set(DecodeHintType.TRY_HARDER, false); // Más rápido, menos exhaustivo
+      
+      // Inicializar el lector de códigos con configuración optimizada
+      codeReader.current = new BrowserMultiFormatReader(hints);
+      console.log('🔍 Iniciando lector de códigos (solo barcodes 1D)...');
       
       // Timeout más largo para móviles
       const scanTimeout = isMobile() ? 4000 : 2000; // Aumentado para móviles
