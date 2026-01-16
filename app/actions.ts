@@ -2,6 +2,7 @@
 
 import db from '@/lib/db'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 
 // --- Dashboard Stats ---
 export async function getDashboardStats() {
@@ -182,6 +183,7 @@ export async function updateItem(formData: FormData) {
 
     revalidatePath('/')
     revalidatePath(`/items/${id}`)
+    redirect('/')
 }
 
 // Eliminar artículo
