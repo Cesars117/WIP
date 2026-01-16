@@ -75,6 +75,7 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
       {items.map((item) => {
         const isExpanded = expandedId === item.id
         const statusStyle = getStatusColor(item.status)
+        const isBoxType = item.unitType === 'BOX' && item.unitsPerBox
 
         return (
           <div
@@ -169,18 +170,18 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
                   {/* Quantity */}
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)' }}>
-                      {item.unitType === 'BOX' && item.unitsPerBox 
+                      {isBoxType 
                         ? (item.totalUnits || (item.quantity * item.unitsPerBox))
                         : item.quantity
                       }
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                      {item.unitType === 'BOX' && item.unitsPerBox 
+                      {isBoxType 
                         ? t('dashboard.units')
                         : t('common.quantity')
                       }
                     </div>
-                    {item.unitType === 'BOX' && item.unitsPerBox && (
+                    {isBoxType && (
                       <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
                         {item.quantity} cajas
                       </div>
@@ -277,7 +278,7 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
                   )}
 
                   {/* Unit Type Details */}
-                  {item.unitType === 'BOX' && item.unitsPerBox && (
+                  {isBoxType && (
                     <>
                       <div>
                         <label style={{ 
