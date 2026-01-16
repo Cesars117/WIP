@@ -31,10 +31,10 @@ export async function getItems(query?: string) {
     return db.item.findMany({
         where: {
             OR: query ? [
-                { name: { contains: query } },
-                { description: { contains: query } },
-                { sku: { contains: query } },
-                { barcode: { contains: query } }
+                { name: { contains: query, mode: 'insensitive' } },
+                { description: { contains: query, mode: 'insensitive' } },
+                { sku: { contains: query, mode: 'insensitive' } },
+                { barcode: { contains: query, mode: 'insensitive' } }
             ] : undefined
         },
         include: {
@@ -112,9 +112,14 @@ export async function updateItem(formData: FormData) {
     const name = formData.get('name') as string
     const categoryId = parseInt(formData.get('categoryId') as string)
     const locationId = parseInt(formData.get('locationId') as string)
-    const quantity = parseInt(formData.get('quantity') as string)
-    const status = formData.get('status') as string
+    const quantity = parseInt(formData.get('quantity') as string) || 0
+    const status = formData.get('status') as string || 'AVAILABLE'
     const newBarcode = formData.get('barcode') as string | null
+    
+    // Material-specific fields
+    const unitType = formData.get('unitType') as string | null
+    const unitsPerBox = formData.get('unitsPerBox') ? parseInt(formData.get('unitsPerBox') as string) : null
+    const totalUnits = formData.get('totalUnits') ? parseInt(formData.get('totalUnits') as string) : null
 
     // Validar barcode único si cambió
     const item = await db.item.findUnique({ where: { id } })
@@ -137,7 +142,10 @@ export async function updateItem(formData: FormData) {
             locationId,
             quantity,
             status,
-            barcode: newBarcode || null
+            barcode: newBarcode || null,
+            unitType,
+            unitsPerBox,
+            totalUnits
         }
     })
 
@@ -146,7 +154,8 @@ export async function updateItem(formData: FormData) {
 }
 
 // Eliminar artículo
-export async function deleteItem(id: number) {
+export async function deleteItem(formData: FormData) {
+    const id = parseInt(formData.get('id') as string)
     await db.item.delete({
         where: { id }
     })

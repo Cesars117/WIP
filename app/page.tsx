@@ -129,7 +129,19 @@ export default async function Home({ searchParams }: { searchParams: { query?: s
                     </td>
                     <td style={{ padding: "16px 24px", color: "var(--text-secondary)" }}>{item.category.name}</td>
                     <td style={{ padding: "16px 24px", color: "var(--text-secondary)" }}>{item.location.name}</td>
-                    <td style={{ padding: "16px 24px" }}>{item.quantity}</td>
+                    <td style={{ padding: "16px 24px" }}>
+                      <div>
+                        <span style={{ fontWeight: 500 }}>{item.quantity}</span>
+                        {item.unitType === 'BOX' && item.unitsPerBox && (
+                          <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
+                            {item.unitsPerBox} u/caja = <strong>{item.totalUnits || (item.quantity * item.unitsPerBox)}</strong> unidades
+                          </div>
+                        )}
+                        {item.unitType === 'UNIT' && (
+                          <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>unidades</div>
+                        )}
+                      </div>
+                    </td>
                     <td style={{ padding: "16px 24px" }}>
                       <span style={{
                         background: "rgba(16, 185, 129, 0.1)",
