@@ -2,6 +2,8 @@ import { getItemById, updateItem, deleteItem } from '@/app/actions'
 import { redirect } from 'next/navigation'
 import db from '@/lib/db'
 import { DeleteItemForm } from '@/app/components/DeleteItemForm'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,45 +24,51 @@ export default async function EditItemPage({ params }: Props) {
   }
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Edit Item</h1>
+    <main className="container" style={{ paddingTop: "4rem", paddingBottom: "4rem" }}>
+      <Link href="/" style={{ display: "inline-flex", alignItems: "center", gap: "8px", color: "var(--text-secondary)", marginBottom: "2rem", textDecoration: "none" }}>
+        <ArrowLeft size={20} />
+        Volver al Panel
+      </Link>
+
+      <h1 className="heading-xl">Editar Artículo</h1>
+      <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>Modifica los datos del artículo: <strong>{item.name}</strong></p>
       
-      <form action={updateItem} className="space-y-4 mb-6">
+      <form action={updateItem} className="card" style={{ maxWidth: "600px", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         <input type="hidden" name="id" value={item.id} />
         
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Nombre del Artículo</label>
           <input
             type="text"
-            id="name"
             name="name"
             defaultValue={item.name}
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
           />
         </div>
 
         <div>
-          <label htmlFor="barcode" className="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+          <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Código de Barras</label>
           <input
             type="text"
-            id="barcode"
             name="barcode"
             defaultValue={item.barcode || ''}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
           />
+          <small style={{ color: "var(--text-secondary)", fontSize: "0.875rem", display: "block", marginTop: "0.5rem" }}>
+            Opcional - Debe ser único si se especifica.
+          </small>
         </div>
 
         <div>
-          <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Categoría</label>
           <select
-            id="categoryId"
             name="categoryId"
             defaultValue={item.category.id}
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
           >
-            <option value="">Select a category</option>
+            <option value="">Selecciona una categoría</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -70,15 +78,14 @@ export default async function EditItemPage({ params }: Props) {
         </div>
 
         <div>
-          <label htmlFor="locationId" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Ubicación</label>
           <select
-            id="locationId"
             name="locationId"
             defaultValue={item.location.id}
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
           >
-            <option value="">Select a location</option>
+            <option value="">Selecciona una ubicación</option>
             {locations.map((location) => (
               <option key={location.id} value={location.id}>
                 {location.name}
@@ -88,67 +95,63 @@ export default async function EditItemPage({ params }: Props) {
         </div>
 
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Estado</label>
           <select
-            id="status"
             name="status"
             defaultValue={item.status}
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
           >
-            <option value="AVAILABLE">Available</option>
-            <option value="IN_USE">In Use</option>
-            <option value="MAINTENANCE">Maintenance</option>
-            <option value="LOST">Lost</option>
+            <option value="AVAILABLE">Disponible</option>
+            <option value="IN_USE">En Uso</option>
+            <option value="MAINTENANCE">Mantenimiento</option>
+            <option value="LOST">Perdido</option>
           </select>
         </div>
 
         <div>
-          <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+          <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Cantidad</label>
           <input
             type="number"
-            id="quantity"
             name="quantity"
             defaultValue={item.quantity}
             min="0"
             required
-            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
           />
         </div>
 
         {item.category.name === 'Material' && (
           <>
             <div>
-              <label htmlFor="unitType" className="block text-sm font-medium text-gray-700 mb-1">Unit Type</label>
+              <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Tipo de Unidad</label>
               <select
-                id="unitType"
                 name="unitType"
                 defaultValue={item.unitType || 'units'}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
               >
-                <option value="units">Units</option>
-                <option value="boxes">Boxes</option>
+                <option value="units">Unidades</option>
+                <option value="boxes">Cajas</option>
               </select>
             </div>
 
             <div>
-              <label htmlFor="unitsPerBox" className="block text-sm font-medium text-gray-700 mb-1">Units per Box</label>
+              <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Unidades por Caja</label>
               <input
                 type="number"
-                id="unitsPerBox"
                 name="unitsPerBox"
                 defaultValue={item.unitsPerBox || 1}
                 min="1"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Units</label>
-              <div className="text-gray-600">
+            <div style={{ padding: "16px", background: "var(--bg-elevated)", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-light)" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Total de Unidades</label>
+              <div style={{ color: "var(--text-main)", fontWeight: 600 }}>
                 {item.unitType === 'boxes' 
-                  ? `${item.quantity} boxes × ${item.unitsPerBox || 1} = ${item.totalUnits}`
-                  : `${item.totalUnits}`}
+                  ? `${item.quantity} cajas × ${item.unitsPerBox || 1} = ${item.totalUnits} unidades`
+                  : `${item.totalUnits} unidades`}
               </div>
             </div>
           </>
@@ -156,13 +159,16 @@ export default async function EditItemPage({ params }: Props) {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="btn btn-primary"
+          style={{ width: "100%", padding: "12px 24px" }}
         >
-          Update Item
+          Actualizar Artículo
         </button>
       </form>
 
-      <DeleteItemForm itemId={item.id} deleteItem={deleteItem} />
-    </div>
+      <div style={{ maxWidth: "600px", marginTop: "1rem" }}>
+        <DeleteItemForm itemId={item.id} deleteItem={deleteItem} />
+      </div>
+    </main>
   )
 }
