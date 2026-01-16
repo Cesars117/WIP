@@ -298,10 +298,11 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                   <div style={{ flex: items.length === 1 ? 'none' : 1, width: items.length === 1 ? '100%' : 'auto' }}>
                     <h3 style={{ 
                       margin: '0 0 8px 0', 
-                      fontSize: items.length === 1 ? '2.5rem' : '1.5rem', 
-                      fontWeight: 700, 
-                      color: 'var(--text)',
-                      textAlign: items.length === 1 ? 'center' : 'left'
+                      fontSize: items.length === 1 ? '3rem' : '1.5rem', 
+                      fontWeight: 800, 
+                      color: '#000000',
+                      textAlign: items.length === 1 ? 'center' : 'left',
+                      lineHeight: '1.1'
                     }}>
                       {selectedItem.name}
                     </h3>
