@@ -4,20 +4,34 @@ import Link from 'next/link';
 
 export const dynamic = 'force-dynamic'
 
-export default async function Home({ searchParams }: { searchParams: { query?: string } }) {
+export default async function Home({ searchParams }: { searchParams: { query?: string, view?: string } }) {
   // Auto-seed on first load solo si no es build time (simplification for this phase)
   if (process.env.NODE_ENV !== 'production') {
     await seedInitialData();
   }
 
   const query = searchParams.query || '';
-  const [{ itemCount, locationCount, totalValue, recentItems }, allItems] = await Promise.all([
+  const view = searchParams.view || '';
+  
+  const [{ itemCount, locationCount, totalValue, recentItems, categorizedItems, locationItems }, allItems] = await Promise.all([
     getDashboardStats(),
     query ? getItems(query) : Promise.resolve([])
   ]);
 
-  // Si hay búsqueda, usar resultados filtrados; si no, mostrar recientes
-  const displayItems = query ? allItems : recentItems;
+  // Determinar qué items mostrar basado en la vista y búsqueda
+  let displayItems = recentItems;
+  let sectionTitle = 'Inventario Reciente';
+  
+  if (query) {
+    displayItems = allItems;
+    sectionTitle = `Resultados de Búsqueda (${displayItems.length})`;
+  } else if (view === 'categories') {
+    displayItems = categorizedItems || [];
+    sectionTitle = 'Artículos por Categoría';
+  } else if (view === 'locations') {
+    displayItems = locationItems || [];
+    sectionTitle = 'Artículos por Ubicación';
+  }
 
   return (
     <main className="container" style={{ paddingTop: "4rem", paddingBottom: "4rem" }}>
@@ -35,29 +49,31 @@ export default async function Home({ searchParams }: { searchParams: { query?: s
 
       {/* Stats Grid */}
       <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.5rem", marginBottom: "3rem" }}>
-        <div className="card">
+        <Link href="/?view=categories" className="card" style={{ textDecoration: 'none', cursor: 'pointer', color: 'inherit' }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: 500 }}>Total Artículos</p>
               <h3 className="heading-lg" style={{ marginTop: "0.5rem" }}>{itemCount}</h3>
+              <p style={{ color: "var(--primary)", fontSize: "0.75rem", marginTop: "0.25rem" }}>Ver por categorías →</p>
             </div>
             <div style={{ background: "rgba(99, 102, 241, 0.1)", padding: "10px", borderRadius: "8px", color: "var(--primary)" }}>
               <Package size={24} />
             </div>
           </div>
-        </div>
+        </Link>
 
-        <div className="card">
+        <Link href="/?view=locations" className="card" style={{ textDecoration: 'none', cursor: 'pointer', color: 'inherit' }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: 500 }}>Ubicaciones Activas</p>
               <h3 className="heading-lg" style={{ marginTop: "0.5rem" }}>{locationCount}</h3>
+              <p style={{ color: "var(--success)", fontSize: "0.75rem", marginTop: "0.25rem" }}>Ver por ubicaciones →</p>
             </div>
             <div style={{ background: "rgba(16, 185, 129, 0.1)", padding: "10px", borderRadius: "8px", color: "var(--success)" }}>
               <MapPin size={24} />
             </div>
           </div>
-        </div>
+        </Link>
 
         <div className="card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -75,7 +91,7 @@ export default async function Home({ searchParams }: { searchParams: { query?: s
       {/* Inventory Preview */}
       <section>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-          <h2 className="heading-lg">{query ? `Resultados de Búsqueda (${displayItems.length})` : 'Inventario Reciente'}</h2>
+          <h2 className="heading-lg">{sectionTitle}</h2>
           <form method="GET" style={{ position: "relative" }}>
             <Search size={18} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
             <input

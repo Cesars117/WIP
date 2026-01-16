@@ -5,12 +5,20 @@ import { revalidatePath } from 'next/cache'
 
 // --- Dashboard Stats ---
 export async function getDashboardStats() {
-    const [itemCount, locationCount, items] = await Promise.all([
+    const [itemCount, locationCount, items, categorizedItems, locationItems] = await Promise.all([
         db.item.count(),
         db.location.count(),
         db.item.findMany({
             take: 5,
             orderBy: { createdAt: 'desc' },
+            include: { category: true, location: true }
+        }),
+        db.item.findMany({
+            orderBy: [{ category: { name: 'asc' } }, { name: 'asc' }],
+            include: { category: true, location: true }
+        }),
+        db.item.findMany({
+            orderBy: [{ location: { name: 'asc' } }, { name: 'asc' }],
             include: { category: true, location: true }
         })
     ])
@@ -22,7 +30,9 @@ export async function getDashboardStats() {
         itemCount,
         locationCount,
         totalValue,
-        recentItems: items
+        recentItems: items,
+        categorizedItems,
+        locationItems
     }
 }
 
@@ -34,7 +44,9 @@ export async function getItems(query?: string) {
                 { name: { contains: query, mode: 'insensitive' } },
                 { description: { contains: query, mode: 'insensitive' } },
                 { sku: { contains: query, mode: 'insensitive' } },
-                { barcode: { contains: query, mode: 'insensitive' } }
+                { barcode: { contains: query, mode: 'insensitive' } },
+                { category: { name: { contains: query, mode: 'insensitive' } } },
+                { location: { name: { contains: query, mode: 'insensitive' } } }
             ] : undefined
         },
         include: {

@@ -23,12 +23,23 @@ jobs:
       
       - run: npm install
       
-      - run: npx prisma generate
+      - name: Check database connection and run migrations
+        run: |
+          if [ -z "${{ secrets.POSTGRES_URL }}" ]; then
+            echo "Warning: POSTGRES_URL not set, skipping database operations"
+            echo "POSTGRES_URL=postgresql://user:pass@localhost:5432/db" > .env
+          else
+            echo "POSTGRES_URL=${{ secrets.POSTGRES_URL }}" > .env
+            npx prisma migrate status || echo "Migration status check failed - continuing"
+          fi
+          npx prisma generate
         env:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       
       - run: npm run lint
       - run: npm run build
+        env:
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL || 'postgresql://user:pass@localhost:5432/db' }}
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
