@@ -23,23 +23,19 @@ jobs:
       
       - run: npm install
       
-      - name: Check database connection and run migrations
+      - name: Setup environment
         run: |
-          if [ -z "${{ secrets.POSTGRES_URL }}" ]; then
-            echo "Warning: POSTGRES_URL not set, skipping database operations"
-            echo "POSTGRES_URL=postgresql://user:pass@localhost:5432/db" > .env
-          else
+          # Create .env file with database URL (fallback if secret not set)
+          if [ -n "${{ secrets.POSTGRES_URL }}" ]; then
             echo "POSTGRES_URL=${{ secrets.POSTGRES_URL }}" > .env
-            npx prisma migrate status || echo "Migration status check failed - continuing"
+          else
+            echo "POSTGRES_URL=postgresql://user:pass@localhost:5432/fallback" > .env
           fi
-          npx prisma generate
-        env:
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      
+      - run: npx prisma generate
       
       - run: npm run lint
       - run: npm run build
-        env:
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL || 'postgresql://user:pass@localhost:5432/db' }}
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -62,9 +58,16 @@ jobs:
       
       - run: npm install -g vercel
       - run: npm install
+      
+      - name: Setup environment
+        run: |
+          if [ -n "${{ secrets.POSTGRES_URL }}" ]; then
+            echo "POSTGRES_URL=${{ secrets.POSTGRES_URL }}" > .env
+          else
+            echo "POSTGRES_URL=postgresql://user:pass@localhost:5432/fallback" > .env
+          fi
+      
       - run: npx prisma generate
-        env:
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       
       - name: Seed production database
         run: node add-data.mjs
@@ -102,9 +105,16 @@ jobs:
           cache: 'npm'
       
       - run: npm install
+      
+      - name: Setup environment
+        run: |
+          if [ -n "${{ secrets.POSTGRES_URL }}" ]; then
+            echo "POSTGRES_URL=${{ secrets.POSTGRES_URL }}" > .env
+          else
+            echo "POSTGRES_URL=postgresql://user:pass@localhost:5432/fallback" > .env
+          fi
+      
       - run: npx prisma generate
-        env:
-          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
       - run: npm run build
       
       - name: Seed production database

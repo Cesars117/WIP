@@ -4,14 +4,15 @@ import Link from 'next/link';
 
 export const dynamic = 'force-dynamic'
 
-export default async function Home({ searchParams }: { searchParams: { query?: string, view?: string } }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ query?: string, view?: string }> }) {
   // Auto-seed on first load solo si no es build time (simplification for this phase)
   if (process.env.NODE_ENV !== 'production') {
     await seedInitialData();
   }
 
-  const query = searchParams.query || '';
-  const view = searchParams.view || '';
+  const resolvedSearchParams = await searchParams;
+  const query = resolvedSearchParams.query || '';
+  const view = resolvedSearchParams.view || '';
   
   const [{ itemCount, locationCount, totalValue, recentItems, categorizedItems, locationItems }, allItems] = await Promise.all([
     getDashboardStats(),
