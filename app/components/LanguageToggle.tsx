@@ -32,7 +32,7 @@ export function LanguageToggle() {
       title={language === 'en' ? 'Cambiar a Español' : 'Switch to English'}
     >
       <Globe size={18} />
-      <span>{language === 'en' ? '🇺🇸 EN' : '🇪🇸 ES'}</span>
+      <span>{language === 'en' ? '🇺🇸 EN' : '�🇽 ES'}</span>
     </button>
   )
 }
