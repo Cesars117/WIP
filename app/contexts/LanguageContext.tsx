@@ -83,6 +83,7 @@ const enTranslations = {
     barcode: 'Barcode',
     name: 'Name',
     description: 'Description',
+    back: 'Back',
   },
   nav: {
     dashboard: 'Dashboard',
@@ -211,6 +212,7 @@ const esTranslations = {
     barcode: 'Código de Barras',
     name: 'Nombre',
     description: 'Descripción',
+    back: 'Volver',
   },
   nav: {
     dashboard: 'Dashboard',

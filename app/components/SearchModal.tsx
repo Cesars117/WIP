@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Package, MapPin, Tag, Barcode as BarcodeIcon, Edit, Check } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/app/contexts/LanguageContext'
@@ -29,6 +29,16 @@ interface SearchModalProps {
 export function SearchModal({ items, query, onClose }: SearchModalProps) {
   const { t } = useLanguage()
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -55,29 +65,33 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
       background: 'rgba(0, 0, 0, 0.75)',
       zIndex: 1000,
       display: 'flex',
-      alignItems: 'center',
+      alignItems: isMobile ? 'flex-start' : 'center',
       justifyContent: 'center',
-      padding: '20px',
-      backdropFilter: 'blur(4px)'
+      padding: isMobile ? '10px' : '20px',
+      backdropFilter: 'blur(4px)',
+      overflowY: 'auto'
     }}>
       <div style={{
         background: 'white',
-        borderRadius: '16px',
-        maxWidth: selectedItem ? '900px' : '700px',
+        borderRadius: isMobile ? '12px' : '16px',
+        maxWidth: isMobile ? '100%' : (selectedItem ? '900px' : '700px'),
         width: '100%',
-        maxHeight: '90vh',
+        maxHeight: isMobile ? '95vh' : '90vh',
+        minHeight: isMobile ? '300px' : 'auto',
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        transition: 'max-width 0.3s'
+        transition: 'max-width 0.3s',
+        margin: isMobile ? '10px 0' : '0'
       }}>
         {/* Header */}
         <div style={{
-          padding: '24px',
+          padding: isMobile ? '16px' : '24px',
           borderBottom: '1px solid var(--border-light)',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexShrink: 0
         }}>
           <div>
             <h2 style={{ margin: '0 0 4px 0', fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)' }}>
@@ -105,14 +119,21 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
           </button>
         </div>
 
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+        <div style={{ 
+          display: 'flex', 
+          flex: 1, 
+          overflow: 'hidden',
+          flexDirection: isMobile && selectedItem ? 'column' : 'row'
+        }}>
           {/* Items List */}
           <div style={{
-            flex: selectedItem ? '0 0 300px' : 1,
+            flex: selectedItem ? (isMobile ? 'none' : '0 0 300px') : 1,
             overflowY: 'auto',
-            padding: '16px',
-            borderRight: selectedItem ? '1px solid var(--border-light)' : 'none',
-            transition: 'flex 0.3s'
+            padding: isMobile ? '12px' : '16px',
+            borderRight: selectedItem && !isMobile ? '1px solid var(--border-light)' : 'none',
+            borderBottom: selectedItem && isMobile ? '1px solid var(--border-light)' : 'none',
+            transition: 'flex 0.3s',
+            display: isMobile && selectedItem ? 'none' : 'block'
           }}>
             {items.map((item) => {
               const isSelected = selectedItem?.id === item.id
@@ -219,9 +240,29 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
             <div style={{
               flex: 1,
               overflowY: 'auto',
-              padding: '24px',
+              padding: isMobile ? '16px' : '24px',
               animation: 'slideInRight 0.3s ease-out'
             }}>
+              {isMobile && (
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  style={{
+                    background: 'none',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text-secondary)',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '0.875rem'
+                  }}
+                >
+                  ← {t('common.back')}
+                </button>
+              )}
               {/* Item Header */}
               <div style={{ marginBottom: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>

@@ -54,6 +54,7 @@ export function DashboardContent({
   query 
 }: DashboardContentProps) {
   const { t } = useLanguage();
+  const [selectedTableItem, setSelectedTableItem] = useState<Item | null>(null);
 
   const getSectionTitle = () => {
     if (query) {
@@ -155,7 +156,17 @@ export function DashboardContent({
               </thead>
               <tbody>
                 {displayItems.map((item) => (
-                  <tr key={item.id} style={{ borderBottom: "1px solid var(--border-light)" }}>
+                  <tr 
+                    key={item.id} 
+                    onClick={() => setSelectedTableItem(item)}
+                    style={{ 
+                      borderBottom: "1px solid var(--border-light)",
+                      cursor: 'pointer',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = 'var(--background)'}
+                    onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                  >
                     <td style={{ padding: "16px 24px", fontWeight: 500 }}>{item.name}</td>
                     <td style={{ padding: "16px 24px", color: "var(--text-secondary)", fontFamily: "monospace", fontSize: "0.875rem" }}>
                       {item.barcode ? (
@@ -207,6 +218,15 @@ export function DashboardContent({
         </div>
         )}
       </section>
+
+      {/* Item Details Modal for table clicks */}
+      {selectedTableItem && (
+        <SearchModal
+          items={[selectedTableItem]}
+          query={selectedTableItem.name}
+          onClose={() => setSelectedTableItem(null)}
+        />
+      )}
     </main>
   );
 }

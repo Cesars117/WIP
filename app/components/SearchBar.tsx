@@ -19,6 +19,10 @@ export function SearchBar() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (searchQuery.trim()) {
+            // Cerrar teclado en móvil
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
             router.push(`/?query=${encodeURIComponent(searchQuery)}`);
         }
     };
