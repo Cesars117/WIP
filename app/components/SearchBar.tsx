@@ -10,7 +10,7 @@ import { findItemByBarcode } from '@/app/actions';
 export function SearchBar() {
     const [searchQuery, setSearchQuery] = useState('');
     const [scannerOpen, setScannerOpen] = useState(false);
-    const [scanResult, setScanResult] = useState<{ barcode: string; item: any } | null>(null);
+    const [scanResult, setScanResult] = useState<{ barcode: string; item: { id: number; name: string; barcode: string | null; quantity: number; status: string; category: { name: string }; location: { name: string } } | null } | null>(null);
     const router = useRouter();
 
     const handleSearch = (e: React.FormEvent) => {

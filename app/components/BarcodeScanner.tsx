@@ -115,7 +115,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
           const permissions = await navigator.permissions.query({ name: 'camera' as PermissionName });
           permissionState = permissions.state;
           console.log('📋 Estado de permisos de cámara:', permissionState);
-        } catch (permError) {
+        } catch {
           console.log('⚠️ No se pueden verificar permisos, procediendo con solicitud directa');
         }
         
@@ -149,7 +149,7 @@ export function BarcodeScanner({ onCodeScanned, onClose }: BarcodeScannerProps) 
         
         stream = await navigator.mediaDevices.getUserMedia(constraints);
         console.log('✅ Acceso a cámara exitoso');
-      } catch (specificError) {
+      } catch {
         console.log('⚠️ Acceso específico falló, intentando con configuración básica...');
         // Fallback a configuración más básica
         stream = await navigator.mediaDevices.getUserMedia({ 
