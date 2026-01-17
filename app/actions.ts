@@ -12,15 +12,57 @@ export async function getDashboardStats() {
         db.item.findMany({
             take: 5,
             orderBy: { createdAt: 'desc' },
-            include: { category: true, location: true }
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                barcode: true,
+                quantity: true,
+                status: true,
+                unitType: true,
+                unitsPerBox: true,
+                totalUnits: true,
+                sku: true,
+                createdAt: true,
+                category: { select: { id: true, name: true } },
+                location: { select: { id: true, name: true } }
+            }
         }),
         db.item.findMany({
             orderBy: [{ category: { name: 'asc' } }, { name: 'asc' }],
-            include: { category: true, location: true }
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                barcode: true,
+                quantity: true,
+                status: true,
+                unitType: true,
+                unitsPerBox: true,
+                totalUnits: true,
+                sku: true,
+                createdAt: true,
+                category: { select: { id: true, name: true } },
+                location: { select: { id: true, name: true } }
+            }
         }),
         db.item.findMany({
             orderBy: [{ location: { name: 'asc' } }, { name: 'asc' }],
-            include: { category: true, location: true }
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                barcode: true,
+                quantity: true,
+                status: true,
+                unitType: true,
+                unitsPerBox: true,
+                totalUnits: true,
+                sku: true,
+                createdAt: true,
+                category: { select: { id: true, name: true } },
+                location: { select: { id: true, name: true } }
+            }
         })
     ])
 
@@ -50,9 +92,20 @@ export async function getItems(query?: string) {
                 { location: { name: { contains: query, mode: 'insensitive' } } }
             ] : undefined
         },
-        include: {
-            category: true,
-            location: true
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            barcode: true,
+            quantity: true,
+            status: true,
+            unitType: true,
+            unitsPerBox: true,
+            totalUnits: true,
+            sku: true,
+            createdAt: true,
+            category: { select: { id: true, name: true } },
+            location: { select: { id: true, name: true } }
         },
         orderBy: { createdAt: 'desc' }
     })
@@ -61,9 +114,19 @@ export async function getItems(query?: string) {
 export async function findItemByBarcode(barcode: string) {
     return db.item.findUnique({
         where: { barcode },
-        include: {
-            category: true,
-            location: true
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            barcode: true,
+            quantity: true,
+            status: true,
+            unitType: true,
+            unitsPerBox: true,
+            totalUnits: true,
+            sku: true,
+            category: { select: { id: true, name: true } },
+            location: { select: { id: true, name: true } }
         }
     })
 }
@@ -199,7 +262,22 @@ export async function deleteItem(formData: FormData) {
 export async function getItemById(id: number) {
     return db.item.findUnique({
         where: { id },
-        include: { category: true, location: true }
+        select: {
+            id: true,
+            name: true,
+            description: true,
+            barcode: true,
+            quantity: true,
+            status: true,
+            unitType: true,
+            unitsPerBox: true,
+            totalUnits: true,
+            sku: true,
+            categoryId: true,
+            locationId: true,
+            category: { select: { id: true, name: true } },
+            location: { select: { id: true, name: true } }
+        }
     })
 }
 
