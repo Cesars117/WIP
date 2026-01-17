@@ -189,6 +189,7 @@ const enTranslations = {
     actions: 'Actions',
     units: 'units',
     unitsPerBox: 'u/box',
+    boxes: 'boxes',
   },
 }
 
@@ -319,5 +320,6 @@ const esTranslations = {
     actions: 'Acciones',
     units: 'unidades',
     unitsPerBox: 'u/caja',
+    boxes: 'cajas',
   },
 }
