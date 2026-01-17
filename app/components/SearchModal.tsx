@@ -232,9 +232,9 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     fontSize: '0.875rem'
                   }}>
                     <span style={{ fontWeight: 600, color: 'var(--text)' }}>
-                      {item.unitType === 'BOX' 
-                        ? `${item.totalUnits || (item.unitsPerBox ? item.quantity * item.unitsPerBox : item.quantity)} units`
-                        : `Qty: ${item.quantity}`
+                      {(item.unitType === 'BOX' && item.unitsPerBox && typeof item.unitsPerBox === 'number')
+                        ? `${item.totalUnits || (item.quantity * item.unitsPerBox)} units`
+                        : `Qty: ${item.quantity || 0}`
                       }
                     </span>
                     <span style={{
@@ -486,8 +486,8 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     color: '#1a1a1a',
                     lineHeight: '1'
                   }}>
-                    {selectedItem.unitType === 'BOX' 
-                      ? (selectedItem.totalUnits || (selectedItem.unitsPerBox ? selectedItem.quantity * selectedItem.unitsPerBox : selectedItem.quantity))
+                    {(selectedItem.unitType === 'BOX' && selectedItem.unitsPerBox && typeof selectedItem.unitsPerBox === 'number')
+                      ? (selectedItem.totalUnits || (selectedItem.quantity * selectedItem.unitsPerBox))
                       : selectedItem.quantity
                     }
                   </p>

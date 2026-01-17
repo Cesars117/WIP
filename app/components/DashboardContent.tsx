@@ -182,12 +182,12 @@ export function DashboardContent({
                     <td style={{ padding: "16px 24px" }}>
                       <div>
                         <span style={{ fontWeight: 500 }}>
-                          {item.unitType === 'BOX' 
-                            ? (item.totalUnits || (item.unitsPerBox ? item.quantity * item.unitsPerBox : item.quantity))
-                            : item.quantity
+                          {(item.unitType === 'BOX' && item.unitsPerBox && typeof item.unitsPerBox === 'number')
+                            ? (item.totalUnits || (item.quantity * item.unitsPerBox))
+                            : (item.quantity || 0)
                           }
                         </span>
-                        {item.unitType === 'BOX' && item.unitsPerBox && (
+                        {(item.unitType === 'BOX' && item.unitsPerBox && typeof item.unitsPerBox === 'number') && (
                           <div style={{ fontSize: "0.875rem", color: "var(--text-secondary)" }}>
                             {item.quantity} {t('dashboard.boxes')} × {item.unitsPerBox} = {item.totalUnits || (item.quantity * item.unitsPerBox)} {t('dashboard.units')}
                           </div>
