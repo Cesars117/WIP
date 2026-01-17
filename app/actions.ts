@@ -307,3 +307,141 @@ export async function seedInitialData() {
         })
     }
 }
+
+// --- Categories CRUD ---
+export async function getCategories() {
+    return db.category.findMany({
+        orderBy: { name: 'asc' },
+        include: { _count: { select: { items: true } } }
+    })
+}
+
+export async function getCategoryById(id: number) {
+    return db.category.findUnique({
+        where: { id },
+        include: { _count: { select: { items: true } } }
+    })
+}
+
+export async function createCategory(formData: FormData) {
+    const name = formData.get('name') as string
+    const description = formData.get('description') as string
+
+    await db.category.create({
+        data: {
+            name,
+            description: description || null
+        }
+    })
+
+    revalidatePath('/categories')
+    redirect('/categories')
+}
+
+export async function updateCategory(formData: FormData) {
+    const id = parseInt(formData.get('id') as string)
+    const name = formData.get('name') as string
+    const description = formData.get('description') as string
+
+    await db.category.update({
+        where: { id },
+        data: {
+            name,
+            description: description || null
+        }
+    })
+
+    revalidatePath('/categories')
+    redirect('/categories')
+}
+
+export async function deleteCategory(formData: FormData) {
+    const id = parseInt(formData.get('id') as string)
+    
+    // Check if category has items
+    const category = await db.category.findUnique({
+        where: { id },
+        include: { _count: { select: { items: true } } }
+    })
+    
+    if (category?._count?.items && category._count.items > 0) {
+        throw new Error(`No se puede eliminar la categoría "${category.name}" porque tiene ${category._count.items} artículos asociados.`)
+    }
+
+    await db.category.delete({
+        where: { id }
+    })
+
+    revalidatePath('/categories')
+}
+
+// --- Locations CRUD ---
+export async function getLocations() {
+    return db.location.findMany({
+        orderBy: { name: 'asc' },
+        include: { _count: { select: { items: true } } }
+    })
+}
+
+export async function getLocationById(id: number) {
+    return db.location.findUnique({
+        where: { id },
+        include: { _count: { select: { items: true } } }
+    })
+}
+
+export async function createLocation(formData: FormData) {
+    const name = formData.get('name') as string
+    const type = formData.get('type') as string
+    const description = formData.get('description') as string
+
+    await db.location.create({
+        data: {
+            name,
+            type,
+            description: description || null
+        }
+    })
+
+    revalidatePath('/locations')
+    redirect('/locations')
+}
+
+export async function updateLocation(formData: FormData) {
+    const id = parseInt(formData.get('id') as string)
+    const name = formData.get('name') as string
+    const type = formData.get('type') as string
+    const description = formData.get('description') as string
+
+    await db.location.update({
+        where: { id },
+        data: {
+            name,
+            type,
+            description: description || null
+        }
+    })
+
+    revalidatePath('/locations')
+    redirect('/locations')
+}
+
+export async function deleteLocation(formData: FormData) {
+    const id = parseInt(formData.get('id') as string)
+    
+    // Check if location has items
+    const location = await db.location.findUnique({
+        where: { id },
+        include: { _count: { select: { items: true } } }
+    })
+    
+    if (location?._count?.items && location._count.items > 0) {
+        throw new Error(`No se puede eliminar la ubicación "${location.name}" porque tiene ${location._count.items} artículos asociados.`)
+    }
+
+    await db.location.delete({
+        where: { id }
+    })
+
+    revalidatePath('/locations')
+}

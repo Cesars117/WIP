@@ -91,6 +91,40 @@ const enTranslations = {
     locations: 'Locations',
     categories: 'Categories',
   },
+  categories: {
+    title: 'Categories',
+    new: 'New Category',
+    edit: 'Edit Category',
+    name: 'Category Name',
+    description: 'Description',
+    create: 'Create Category',
+    update: 'Update Category',
+    delete: 'Delete Category',
+    confirmDelete: 'Are you sure you want to delete this category?',
+    itemCount: 'items',
+    cannotDelete: 'Cannot delete category with associated items',
+    manage: 'Manage categories and organize your inventory',
+  },
+  locations: {
+    title: 'Locations',
+    new: 'New Location',
+    edit: 'Edit Location',
+    name: 'Location Name',
+    type: 'Type',
+    description: 'Description',
+    create: 'Create Location',
+    update: 'Update Location',
+    delete: 'Delete Location',
+    confirmDelete: 'Are you sure you want to delete this location?',
+    itemCount: 'items',
+    cannotDelete: 'Cannot delete location with associated items',
+    manage: 'Manage locations and warehouses',
+    types: {
+      WAREHOUSE: 'Warehouse',
+      VEHICLE: 'Vehicle',
+      SITE: 'Site'
+    }
+  },
   search: {
     placeholder: 'Search items...',
     scanBarcode: 'Scan Barcode',
@@ -190,6 +224,7 @@ const enTranslations = {
     units: 'units',
     unitsPerBox: 'u/box',
     boxes: 'boxes',
+    management: 'Management',
   },
 }
 
@@ -221,6 +256,40 @@ const esTranslations = {
     items: 'Items',
     locations: 'Ubicaciones',
     categories: 'Categorías',
+  },
+  categories: {
+    title: 'Categorías',
+    new: 'Nueva Categoría',
+    edit: 'Editar Categoría',
+    name: 'Nombre de Categoría',
+    description: 'Descripción',
+    create: 'Crear Categoría',
+    update: 'Actualizar Categoría',
+    delete: 'Eliminar Categoría',
+    confirmDelete: '¿Estás seguro de que quieres eliminar esta categoría?',
+    itemCount: 'artículos',
+    cannotDelete: 'No se puede eliminar categoría con artículos asociados',
+    manage: 'Gestionar categorías y organizar tu inventario',
+  },
+  locations: {
+    title: 'Ubicaciones',
+    new: 'Nueva Ubicación',
+    edit: 'Editar Ubicación',
+    name: 'Nombre de Ubicación',
+    type: 'Tipo',
+    description: 'Descripción',
+    create: 'Crear Ubicación',
+    update: 'Actualizar Ubicación',
+    delete: 'Eliminar Ubicación',
+    confirmDelete: '¿Estás seguro de que quieres eliminar esta ubicación?',
+    itemCount: 'artículos',
+    cannotDelete: 'No se puede eliminar ubicación con artículos asociados',
+    manage: 'Gestionar ubicaciones y bodegas',
+    types: {
+      WAREHOUSE: 'Bodega',
+      VEHICLE: 'Vehículo',
+      SITE: 'Sitio'
+    }
   },
   search: {
     placeholder: 'Buscar items...',
@@ -321,5 +390,6 @@ const esTranslations = {
     units: 'unidades',
     unitsPerBox: 'u/caja',
     boxes: 'cajas',
+    management: 'Gestión',
   },
 }

@@ -118,6 +118,50 @@ export function DashboardContent({
         </div>
       </section>
 
+      {/* Management Links */}
+      <section style={{ marginBottom: "3rem" }}>
+        <h2 className="heading-lg" style={{ marginBottom: "1.5rem" }}>{t('dashboard.management')}</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
+          <Link href="/categories" className="card" style={{ textDecoration: 'none', color: 'inherit', padding: '1.5rem' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div style={{ 
+                background: "rgba(99, 102, 241, 0.1)", 
+                padding: "12px", 
+                borderRadius: "8px", 
+                color: "var(--primary)"
+              }}>
+                <Package size={24} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontWeight: 600, fontSize: "1.125rem" }}>{t('categories.title')}</h3>
+                <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.875rem", marginTop: "4px" }}>
+                  {t('categories.manage')}
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/locations" className="card" style={{ textDecoration: 'none', color: 'inherit', padding: '1.5rem' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div style={{ 
+                background: "rgba(16, 185, 129, 0.1)", 
+                padding: "12px", 
+                borderRadius: "8px", 
+                color: "var(--success)"
+              }}>
+                <MapPin size={24} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontWeight: 600, fontSize: "1.125rem" }}>{t('locations.title')}</h3>
+                <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.875rem", marginTop: "4px" }}>
+                  {t('locations.manage')}
+                </p>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </section>
+
       {/* Inventory Preview */}
       <section>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
