@@ -473,7 +473,7 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em'
                     }}>
-                      {t('common.quantity')}
+                      {selectedItem.unitType === 'BOX' ? t('dashboard.units') : t('common.quantity')}
                     </label>
                   </div>
                   <p style={{ 
@@ -483,7 +483,10 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     color: '#1a1a1a',
                     lineHeight: '1'
                   }}>
-                    {selectedItem.quantity}
+                    {selectedItem.unitType === 'BOX' 
+                      ? (selectedItem.totalUnits || (selectedItem.unitsPerBox ? selectedItem.quantity * selectedItem.unitsPerBox : selectedItem.quantity))
+                      : selectedItem.quantity
+                    }
                   </p>
                 </div>
 
