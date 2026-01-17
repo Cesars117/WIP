@@ -75,7 +75,7 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
       {items.map((item) => {
         const isExpanded = expandedId === item.id
         const statusStyle = getStatusColor(item.status)
-        const isBoxType = item.unitType === 'BOX' && item.unitsPerBox
+        const isBoxType = item.unitType === 'BOX' && item.unitsPerBox && typeof item.unitsPerBox === 'number'
 
         return (
           <div
@@ -171,7 +171,7 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)' }}>
                       {isBoxType 
-                        ? (item.totalUnits || (item.unitsPerBox ? item.quantity * item.unitsPerBox : item.quantity))
+                        ? (item.totalUnits || (item.quantity * (item.unitsPerBox as number)))
                         : item.quantity
                       }
                     </div>
