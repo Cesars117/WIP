@@ -232,7 +232,10 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     fontSize: '0.875rem'
                   }}>
                     <span style={{ fontWeight: 600, color: 'var(--text)' }}>
-                      Qty: {item.quantity}
+                      {item.unitType === 'BOX' 
+                        ? `${item.totalUnits || (item.unitsPerBox ? item.quantity * item.unitsPerBox : item.quantity)} units`
+                        : `Qty: ${item.quantity}`
+                      }
                     </span>
                     <span style={{
                       background: statusStyle.bg,
