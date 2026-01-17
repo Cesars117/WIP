@@ -297,7 +297,7 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
                           {t('newItem.totalUnits')}
                         </label>
                         <p style={{ margin: 0, color: 'var(--text)', fontSize: '1rem', fontWeight: 500 }}>
-                          {item.totalUnits || (item.quantity * item.unitsPerBox)}
+                          {item.totalUnits || (item.quantity * (item.unitsPerBox || 0))}
                         </p>
                       </div>
                     </>
