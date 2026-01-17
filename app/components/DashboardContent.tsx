@@ -183,7 +183,7 @@ export function DashboardContent({
                       <div>
                         <span style={{ fontWeight: 500 }}>
                           {((item.unitType === 'BOX' || item.unitsPerBox) && item.unitsPerBox && typeof item.unitsPerBox === 'number')
-                            ? (item.totalUnits || (item.quantity * item.unitsPerBox))
+                            ? `${item.totalUnits || (item.quantity * item.unitsPerBox)} units - ${item.quantity} box`
                             : (item.quantity || 0)
                           }
                         </span>

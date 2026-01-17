@@ -171,7 +171,7 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--text)' }}>
                       {isBoxType 
-                        ? (item.totalUnits || (item.quantity * (item.unitsPerBox as number)))
+                        ? `${item.totalUnits || (item.quantity * (item.unitsPerBox as number))} units - ${item.quantity} box`
                         : item.quantity
                       }
                     </div>

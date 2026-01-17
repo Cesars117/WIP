@@ -487,7 +487,7 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     lineHeight: '1'
                   }}>
                     {((selectedItem.unitType === 'BOX' || selectedItem.unitsPerBox) && selectedItem.unitsPerBox && typeof selectedItem.unitsPerBox === 'number')
-                      ? (selectedItem.totalUnits || (selectedItem.quantity * selectedItem.unitsPerBox))
+                      ? `${selectedItem.totalUnits || (selectedItem.quantity * selectedItem.unitsPerBox)} units - ${selectedItem.quantity} box`
                       : selectedItem.quantity
                     }
                   </p>
