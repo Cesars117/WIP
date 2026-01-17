@@ -232,7 +232,7 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     fontSize: '0.875rem'
                   }}>
                     <span style={{ fontWeight: 600, color: 'var(--text)' }}>
-                      {(item.unitType === 'BOX' && item.unitsPerBox && typeof item.unitsPerBox === 'number')
+                      {((item.unitType === 'BOX' || item.unitsPerBox) && item.unitsPerBox && typeof item.unitsPerBox === 'number')
                         ? `${item.totalUnits || (item.quantity * item.unitsPerBox)} units`
                         : `Qty: ${item.quantity || 0}`
                       }
@@ -486,7 +486,7 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                     color: '#1a1a1a',
                     lineHeight: '1'
                   }}>
-                    {(selectedItem.unitType === 'BOX' && selectedItem.unitsPerBox && typeof selectedItem.unitsPerBox === 'number')
+                    {((selectedItem.unitType === 'BOX' || selectedItem.unitsPerBox) && selectedItem.unitsPerBox && typeof selectedItem.unitsPerBox === 'number')
                       ? (selectedItem.totalUnits || (selectedItem.quantity * selectedItem.unitsPerBox))
                       : selectedItem.quantity
                     }

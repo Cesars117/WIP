@@ -75,7 +75,7 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
       {items.map((item) => {
         const isExpanded = expandedId === item.id
         const statusStyle = getStatusColor(item.status)
-        const isBoxType = item.unitType === 'BOX' && item.unitsPerBox && typeof item.unitsPerBox === 'number'
+        const isBoxType = (item.unitType === 'BOX' || item.unitsPerBox) && item.unitsPerBox && typeof item.unitsPerBox === 'number'
 
         return (
           <div
