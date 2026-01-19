@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build", 
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "backup": "node scripts/backup.js",
+    "safe-migrate": "node scripts/pre-migration-backup.js",
+    "setup-auto-backup": "setup-auto-backup.bat"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",

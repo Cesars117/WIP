@@ -9,3 +9,12 @@ build/
 .DS_Store
 .git/
 tsconfig.tsbuildinfo
+
+# Backup files - importantes pero no en git
+backups/
+*.backup
+*.bak
+temp-*.js
+check-*.js
+quick-entry.js
+restore-*.js

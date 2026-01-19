@@ -3,6 +3,8 @@
 import db from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import fs from 'fs'
+import path from 'path'
 
 // --- Dashboard Stats ---
 export async function getDashboardStats() {
@@ -444,4 +446,73 @@ export async function deleteLocation(formData: FormData) {
     })
 
     revalidatePath('/locations')
+}
+
+// 📤 EXPORT Y BACKUP
+export async function exportToCSV() {
+  try {
+    const items = await db.item.findMany({
+      include: {
+        category: { select: { name: true } },
+        location: { select: { name: true } }
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    const csvContent = [
+      'nombre,sku,descripcion,estado,categoria,ubicacion,fechaCreacion',
+      ...items.map(item => 
+        `"${item.name}","${item.sku || ''}","${item.description || ''}","${item.status}","${item.category?.name || 'Sin categoría'}","${item.location?.name || 'Sin ubicación'}","${item.createdAt}"`
+      )
+    ].join('\n');
+
+    return {
+      success: true,
+      data: csvContent,
+      filename: `inventario-${new Date().toISOString().split('T')[0]}.csv`,
+      count: items.length
+    };
+  } catch (error) {
+    return { success: false, error: 'Error generando CSV' };
+  }
+}
+
+export async function createManualBackup() {
+  try {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupDir = path.join(process.cwd(), 'backups');
+    
+    if (!fs.existsSync(backupDir)) {
+      fs.mkdirSync(backupDir, { recursive: true });
+    }
+
+    const [items, categories, locations] = await Promise.all([
+      db.item.findMany({ include: { category: true, location: true } }),
+      db.category.findMany(),
+      db.location.findMany()
+    ]);
+
+    const backup = {
+      timestamp: new Date().toISOString(),
+      version: '1.0',
+      counts: {
+        items: items.length,
+        categories: categories.length,
+        locations: locations.length
+      },
+      data: { items, categories, locations }
+    };
+
+    const backupPath = path.join(backupDir, `manual-backup-${timestamp}.json`);
+    fs.writeFileSync(backupPath, JSON.stringify(backup, null, 2));
+
+    return {
+      success: true,
+      path: backupPath,
+      counts: backup.counts,
+      timestamp
+    };
+  } catch (error) {
+    return { success: false, error: 'Error creando backup' };
+  }
 }

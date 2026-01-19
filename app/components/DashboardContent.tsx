@@ -1,6 +1,6 @@
 'use client'
 
-import { Package, MapPin, BarChart3, Plus, Edit } from "lucide-react";
+import { Package, MapPin, BarChart3, Plus, Edit, Shield } from "lucide-react";
 import Link from 'next/link';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { SearchModal } from './SearchModal';
@@ -71,10 +71,16 @@ export function DashboardContent({
           <h1 className="heading-xl">{t('dashboard.title')}</h1>
           <p style={{ color: "var(--text-secondary)", marginTop: "0.5rem" }}>{t('dashboard.welcome')}</p>
         </div>
-        <Link href="/items/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
-          <Plus size={20} />
-          {t('dashboard.newArticle')}
-        </Link>
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+          <Link href="/backup" className="btn" style={{ textDecoration: 'none', background: "var(--surface-secondary)", color: "var(--text-primary)" }}>
+            <Shield size={20} />
+            Backup
+          </Link>
+          <Link href="/items/new" className="btn btn-primary" style={{ textDecoration: 'none' }}>
+            <Plus size={20} />
+            {t('dashboard.newArticle')}
+          </Link>
+        </div>
       </header>
 
       {/* Stats Grid */}
