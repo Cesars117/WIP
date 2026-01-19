@@ -1,10 +1,19 @@
 import { getDashboardStats, seedInitialData, getItems } from "./actions";
 import { SearchBar } from "./components/SearchBar";
 import { DashboardContent } from "./components/DashboardContent";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const dynamic = 'force-dynamic'
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ query?: string, view?: string }> }) {
+  // Check authentication
+  const session = await auth();
+  
+  if (!session) {
+    redirect('/login');
+  }
+
   // Auto-seed on first load solo si no es build time (simplification for this phase)
   if (process.env.NODE_ENV !== 'production') {
     await seedInitialData();

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { BarcodeScanner } from './BarcodeScanner';
 import { BarcodeScanResult } from './BarcodeScanResult';
+import { LogoutButton } from './LogoutButton';
 import { Search, Camera } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { findItemByBarcode } from '@/app/actions';
@@ -147,6 +148,7 @@ export function SearchBar() {
                     </button>
 
                     <LanguageToggle />
+                    <LogoutButton />
                 </div>
             </form>
 
