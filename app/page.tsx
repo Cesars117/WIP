@@ -1,14 +1,15 @@
 import { getDashboardStats, seedInitialData, getItems } from "./actions";
 import { SearchBar } from "./components/SearchBar";
 import { DashboardContent } from "./components/DashboardContent";
-import { auth } from "@/lib/auth";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export const dynamic = 'force-dynamic'
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ query?: string, view?: string }> }) {
   // Check authentication
-  const session = await auth();
+  const session = await getServerSession(authOptions);
   
   if (!session) {
     redirect('/login');

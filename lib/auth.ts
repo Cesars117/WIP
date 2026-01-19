@@ -1,7 +1,8 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import type { NextAuthOptions } from "next-auth"
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -34,4 +35,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }
   },
   secret: process.env.NEXTAUTH_SECRET || "wip-inventory-secret-key-2026"
-})
+}
+
+export default NextAuth(authOptions)
