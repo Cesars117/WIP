@@ -12,13 +12,13 @@ export default function BackupPage() {
     setIsExporting(true);
     try {
       const result = await exportToCSV();
-      if (result.success) {
+      if (result.success && result.data) {
         // Crear y descargar el archivo CSV
         const blob = new Blob([result.data], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
         link.setAttribute('href', url);
-        link.setAttribute('download', result.filename);
+        link.setAttribute('download', result.filename || 'inventario.csv');
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -40,7 +40,7 @@ export default function BackupPage() {
     setIsBackingUp(true);
     try {
       const result = await createManualBackup();
-      if (result.success) {
+      if (result.success && result.counts) {
         setMessage(
           `✅ Backup creado exitosamente
 📊 ${result.counts.items} artículos

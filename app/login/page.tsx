@@ -28,7 +28,7 @@ export default function LoginPage() {
       } else {
         router.push('/')
       }
-    } catch (error) {
+    } catch {
       setError('Something went wrong')
     } finally {
       setLoading(false)

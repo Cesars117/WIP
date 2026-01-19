@@ -11,10 +11,10 @@
  * npx prisma migrate dev --name tu_migracion
  */
 
-const { exec } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const readline = require('readline');
+import { exec } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import readline from 'readline';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -27,7 +27,7 @@ function question(prompt) {
 
 async function runCommand(command) {
   return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
+    exec(command, (error, stdout) => {
       if (error) reject(error);
       else resolve(stdout);
     });
@@ -242,10 +242,10 @@ async function main() {
   
   try {
     // 1. Verificación inicial
-    const counts = await preBackupCheck();
+    await preBackupCheck();
     
     // 2. Crear backup
-    const backupFile = await createPreMigrationBackup();
+    await createPreMigrationBackup();
     
     // 3. Confirmar migración
     const migrationName = await confirmMigration();
@@ -265,8 +265,8 @@ async function main() {
 }
 
 // Ejecutar solo si se llama directamente
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-module.exports = { main };
+export { main };

@@ -16,6 +16,14 @@ const eslintConfig = defineConfig([
     "add-data.*",
     "seed-simple.*",
     "prisma-helper.ps1",
+    // Backup and temporary files:
+    "backups/**",
+    "scripts/**",
+    "*.backup.js",
+    "check-*.js",
+    "quick-entry.js",
+    "restore-*.js",
+    "temp-*.js",
   ]),
 ]);
 

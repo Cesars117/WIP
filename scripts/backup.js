@@ -1,6 +1,6 @@
-const { PrismaClient } = require('@prisma/client');
-const fs = require('fs');
-const path = require('path');
+import { PrismaClient } from '@prisma/client';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -177,7 +177,7 @@ restoreBackup().catch(console.error);
 }
 
 // Ejecutar backup si se llama directamente
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   createBackup().then(result => {
     if (!result.success) {
       process.exit(1);
@@ -185,4 +185,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { createBackup };
+export { createBackup };

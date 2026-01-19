@@ -1,7 +1,3 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
-
 export default function BulkEntry() {
   return (
     <div className="max-w-6xl mx-auto p-6">

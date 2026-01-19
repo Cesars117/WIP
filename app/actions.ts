@@ -473,6 +473,7 @@ export async function exportToCSV() {
       count: items.length
     };
   } catch (error) {
+    console.error('Error generando CSV:', error);
     return { success: false, error: 'Error generando CSV' };
   }
 }
@@ -513,6 +514,7 @@ export async function createManualBackup() {
       timestamp
     };
   } catch (error) {
+    console.error('Error creando backup:', error);
     return { success: false, error: 'Error creando backup' };
   }
 }
