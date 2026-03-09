@@ -17,6 +17,7 @@ model Item {
   barcode     String?  @unique
   imageUrl    String?
   status      String   @default("AVAILABLE") // AVAILABLE, IN_USE, MAINTENANCE, LOST
+  siteKitSku  String?  // Optional Site Kit SKU
   
   // Material-specific fields
   unitType    String?  // UNIT, BOX
@@ -29,8 +30,21 @@ model Item {
   location    Location @relation(fields: [locationId], references: [id])
   locationId  Int
 
+  serialNumbers SerialNumber[]
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model SerialNumber {
+  id            Int      @id @default(autoincrement())
+  serialNumber  String?  // Regular serial number
+  tmoSerial     String?  // T-Mobile serial number
+  
+  item          Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId        Int
+
+  createdAt     DateTime @default(now())
 }
 
 model Category {

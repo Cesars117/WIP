@@ -1,16 +1,38 @@
 'use client'
 
+interface SerialInfo {
+  id: number
+  serialNumber: string | null
+  tmoSerial: string | null
+}
+
 interface DeleteFormProps {
   itemId: number
+  itemName: string
+  serialNumbers: SerialInfo[]
   deleteItem: (formData: FormData) => Promise<void>
 }
 
-export function DeleteItemForm({ itemId, deleteItem }: DeleteFormProps) {
+export function DeleteItemForm({ itemId, itemName, serialNumbers, deleteItem }: DeleteFormProps) {
+  const buildConfirmMessage = () => {
+    let msg = `¿Estás seguro de que quieres eliminar "${itemName}"?`
+    if (serialNumbers.length > 0) {
+      msg += `\n\nSe eliminarán ${serialNumbers.length} número(s) de serie:`
+      serialNumbers.forEach((sn, i) => {
+        const parts: string[] = []
+        if (sn.serialNumber) parts.push(`SN: ${sn.serialNumber}`)
+        if (sn.tmoSerial) parts.push(`TMO: ${sn.tmoSerial}`)
+        msg += `\n  ${i + 1}. ${parts.join(' | ')}`
+      })
+    }
+    return msg
+  }
+
   return (
     <form 
       action={deleteItem} 
       onSubmit={(e) => {
-        if (!confirm('¿Estás seguro de que quieres eliminar este artículo?')) {
+        if (!confirm(buildConfirmMessage())) {
           e.preventDefault()
         }
       }}
@@ -22,9 +44,26 @@ export function DeleteItemForm({ itemId, deleteItem }: DeleteFormProps) {
       <h3 style={{ color: "#dc2626", marginBottom: "0.5rem", fontSize: "1.125rem", fontWeight: 600 }}>
         Zona Peligrosa
       </h3>
-      <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem", fontSize: "0.875rem" }}>
+      <p style={{ color: "var(--text-secondary)", marginBottom: "0.75rem", fontSize: "0.875rem" }}>
         Una vez eliminado, este artículo no se puede recuperar. Esta acción es permanente.
       </p>
+
+      {serialNumbers.length > 0 && (
+        <div style={{ marginBottom: "1rem", padding: "12px", background: "rgba(239, 68, 68, 0.08)", borderRadius: "var(--radius-sm)", border: "1px solid rgba(239, 68, 68, 0.15)" }}>
+          <p style={{ color: "#dc2626", fontSize: "0.8rem", fontWeight: 600, margin: "0 0 8px 0" }}>
+            ⚠️ Se eliminarán {serialNumbers.length} número(s) de serie:
+          </p>
+          <div style={{ maxHeight: "150px", overflowY: "auto" }}>
+            {serialNumbers.map((sn, i) => (
+              <div key={sn.id} style={{ fontSize: "0.8rem", color: "var(--text-secondary)", padding: "4px 0", borderBottom: i < serialNumbers.length - 1 ? "1px solid rgba(239, 68, 68, 0.1)" : "none" }}>
+                <span style={{ fontWeight: 500 }}>#{i + 1}</span>
+                {sn.serialNumber && <span style={{ marginLeft: "8px" }}>SN: <code style={{ background: "rgba(0,0,0,0.05)", padding: "2px 4px", borderRadius: "3px" }}>{sn.serialNumber}</code></span>}
+                {sn.tmoSerial && <span style={{ marginLeft: "8px" }}>TMO: <code style={{ background: "rgba(0,0,0,0.05)", padding: "2px 4px", borderRadius: "3px" }}>{sn.tmoSerial}</code></span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       <button
         type="submit"

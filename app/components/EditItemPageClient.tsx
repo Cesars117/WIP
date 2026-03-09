@@ -18,6 +18,8 @@ interface EditItemPageClientProps {
     description?: string | null
     unitType?: string | null
     unitsPerBox?: number | null
+    siteKitSku?: string | null
+    serialNumbers?: Array<{ id: number; serialNumber: string | null; tmoSerial: string | null }>
   }
   categories: Array<{ id: number; name: string }>
   locations: Array<{ id: number; name: string }>
@@ -48,7 +50,12 @@ export function EditItemPageClient({ item, categories, locations, updateItem, de
       />
 
       <div style={{ maxWidth: "600px", marginTop: "2rem" }}>
-        <DeleteItemForm itemId={item.id} deleteItem={deleteItem} />
+        <DeleteItemForm 
+          itemId={item.id} 
+          itemName={item.name}
+          serialNumbers={item.serialNumbers || []}
+          deleteItem={deleteItem} 
+        />
       </div>
     </main>
   )

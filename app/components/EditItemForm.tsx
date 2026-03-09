@@ -4,6 +4,13 @@ import { useState } from 'react';
 import { ScanButton } from './ScanButton';
 import { BarcodeGeneratorButton } from './BarcodeGeneratorButton';
 import { useLanguage } from '@/app/contexts/LanguageContext';
+import { Plus, Trash2 } from 'lucide-react';
+
+interface SerialEntry {
+    id?: number;
+    serialNumber: string;
+    tmoSerial: string;
+}
 
 interface EditItemFormProps {
     item: {
@@ -17,6 +24,8 @@ interface EditItemFormProps {
         description?: string | null;
         unitType?: string | null;
         unitsPerBox?: number | null;
+        siteKitSku?: string | null;
+        serialNumbers?: Array<{ id: number; serialNumber: string | null; tmoSerial: string | null }>;
     };
     categories: Array<{ id: number; name: string }>;
     locations: Array<{ id: number; name: string }>;
@@ -28,6 +37,13 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
     const [barcode, setBarcode] = useState(item.barcode || '');
     const [unitType, setUnitType] = useState(item.unitType || 'units');
     const [categoryId, setCategoryId] = useState(item.categoryId);
+    const [serialEntries, setSerialEntries] = useState<SerialEntry[]>(
+        (item.serialNumbers || []).map(sn => ({
+            id: sn.id,
+            serialNumber: sn.serialNumber || '',
+            tmoSerial: sn.tmoSerial || ''
+        }))
+    );
 
     const handleBarcodeSet = (scannedBarcode: string) => {
         setBarcode(scannedBarcode);
@@ -37,8 +53,28 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
     const selectedCategory = categories.find(cat => cat.id === categoryId);
     const isMaterial = selectedCategory?.name === 'Material';
 
+    const addSerialEntry = () => {
+        setSerialEntries([...serialEntries, { serialNumber: '', tmoSerial: '' }]);
+    };
+
+    const removeSerialEntry = (index: number) => {
+        setSerialEntries(serialEntries.filter((_, i) => i !== index));
+    };
+
+    const updateSerialEntryField = (index: number, field: 'serialNumber' | 'tmoSerial', value: string) => {
+        const updated = [...serialEntries];
+        updated[index] = { ...updated[index], [field]: value };
+        setSerialEntries(updated);
+    };
+
+    const handleSubmit = async (formData: FormData) => {
+        const validSerials = serialEntries.filter(s => s.serialNumber.trim() || s.tmoSerial.trim());
+        formData.set('serialNumbers', JSON.stringify(validSerials));
+        await updateItem(formData);
+    };
+
     return (
-        <form action={updateItem} className="card" style={{ maxWidth: "600px", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+        <form action={handleSubmit} className="card" style={{ maxWidth: "600px", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
             <input type="hidden" name="id" value={item.id} />
             
             <div>
@@ -187,6 +223,87 @@ export function EditItemForm({ item, categories, locations, updateItem }: EditIt
                     placeholder={t('newItem.descriptionPlaceholder')} 
                     style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none", resize: "vertical", minHeight: "80px" }}
                 />
+            </div>
+
+            {/* Site Kit SKU */}
+            <div>
+                <label style={{ display: "block", marginBottom: "0.5rem", color: "var(--text-secondary)", fontWeight: 500 }}>Site Kit SKU ({t('newItem.descriptionPlaceholder').includes('opcional') ? 'Opcional' : 'Optional'})</label>
+                <input
+                    name="siteKitSku"
+                    type="text"
+                    defaultValue={item.siteKitSku || ''}
+                    placeholder="Ej. SK-2024-001"
+                    style={{ width: "100%", padding: "12px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none" }}
+                />
+            </div>
+
+            {/* Serial Numbers Section */}
+            <div style={{ padding: "16px", background: "rgba(99, 102, 241, 0.05)", borderRadius: "var(--radius-sm)", border: "1px solid rgba(99, 102, 241, 0.2)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                    <h4 style={{ margin: 0, color: "var(--primary)", fontSize: "0.875rem", fontWeight: 600 }}>
+                        🔢 {t('serialNumbers.title')}
+                    </h4>
+                    <button
+                        type="button"
+                        onClick={addSerialEntry}
+                        style={{
+                            display: "flex", alignItems: "center", gap: "4px",
+                            padding: "6px 12px", background: "var(--primary)", color: "white",
+                            border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer",
+                            fontSize: "0.8rem", fontWeight: 500
+                        }}
+                    >
+                        <Plus size={14} /> {t('serialNumbers.add')}
+                    </button>
+                </div>
+
+                {serialEntries.length === 0 && (
+                    <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem", margin: 0 }}>
+                        {t('serialNumbers.empty')}
+                    </p>
+                )}
+
+                {serialEntries.map((entry, index) => (
+                    <div key={index} style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start", marginBottom: "8px" }}>
+                        <div style={{ flex: 1 }}>
+                            {index === 0 && <label style={{ display: "block", marginBottom: "4px", color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 500 }}>Serial Number</label>}
+                            <input
+                                type="text"
+                                value={entry.serialNumber}
+                                onChange={(e) => updateSerialEntryField(index, 'serialNumber', e.target.value)}
+                                placeholder="Serial Number"
+                                style={{ width: "100%", padding: "10px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none", fontSize: "0.875rem" }}
+                            />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            {index === 0 && <label style={{ display: "block", marginBottom: "4px", color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 500 }}>TMO Serial (T-Mobile)</label>}
+                            <input
+                                type="text"
+                                value={entry.tmoSerial}
+                                onChange={(e) => updateSerialEntryField(index, 'tmoSerial', e.target.value)}
+                                placeholder="TMO Serial"
+                                style={{ width: "100%", padding: "10px", background: "var(--bg-elevated)", border: "1px solid var(--border-light)", color: "var(--text-main)", borderRadius: "var(--radius-sm)", outline: "none", fontSize: "0.875rem" }}
+                            />
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => removeSerialEntry(index)}
+                            style={{
+                                padding: "10px", background: "rgba(239, 68, 68, 0.1)", color: "#dc2626",
+                                border: "none", borderRadius: "var(--radius-sm)", cursor: "pointer",
+                                marginTop: index === 0 ? "20px" : "0", flexShrink: 0
+                            }}
+                        >
+                            <Trash2 size={16} />
+                        </button>
+                    </div>
+                ))}
+
+                {serialEntries.length > 0 && (
+                    <small style={{ color: "var(--text-secondary)", fontSize: "0.8rem" }}>
+                        {serialEntries.filter(s => s.serialNumber.trim() || s.tmoSerial.trim()).length} de {serialEntries.length} con datos.
+                    </small>
+                )}
             </div>
 
             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>

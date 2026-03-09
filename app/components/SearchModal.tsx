@@ -16,8 +16,10 @@ interface Item {
   unitsPerBox: number | null
   totalUnits: number | null
   sku: string | null
+  siteKitSku: string | null
   category: { name: string }
   location: { name: string }
+  serialNumbers: Array<{ id: number; serialNumber: string | null; tmoSerial: string | null }>
 }
 
 interface SearchModalProps {
@@ -518,7 +520,7 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
               </div>
 
               {/* Additional Details */}
-              {(selectedItem.sku || selectedItem.unitType === 'BOX') && (
+              {(selectedItem.sku || selectedItem.siteKitSku || selectedItem.unitType === 'BOX') && (
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
@@ -539,6 +541,24 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                       </label>
                       <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text)', fontFamily: 'monospace' }}>
                         {selectedItem.sku}
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedItem.siteKitSku && (
+                    <div>
+                      <label style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: 'var(--text-secondary)',
+                        textTransform: 'uppercase',
+                        marginBottom: '4px',
+                        display: 'block'
+                      }}>
+                        Site Kit SKU
+                      </label>
+                      <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text)', fontFamily: 'monospace' }}>
+                        {selectedItem.siteKitSku}
                       </p>
                     </div>
                   )}
@@ -577,6 +597,44 @@ export function SearchModal({ items, query, onClose }: SearchModalProps) {
                       </div>
                     </>
                   )}
+                </div>
+              )}
+
+              {/* Serial Numbers */}
+              {selectedItem.serialNumbers && selectedItem.serialNumbers.length > 0 && (
+                <div style={{
+                  background: 'rgba(99, 102, 241, 0.05)',
+                  border: '1px solid rgba(99, 102, 241, 0.2)',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  marginBottom: '24px'
+                }}>
+                  <label style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 700,
+                    color: 'var(--primary)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    marginBottom: '12px',
+                    display: 'block'
+                  }}>
+                    🔢 {t('serialNumbers.title')} ({selectedItem.serialNumbers.length})
+                  </label>
+                  <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    {selectedItem.serialNumbers.map((sn, i) => (
+                      <div key={sn.id} style={{
+                        display: 'flex',
+                        gap: '16px',
+                        padding: '8px 0',
+                        borderBottom: i < selectedItem.serialNumbers.length - 1 ? '1px solid rgba(99, 102, 241, 0.1)' : 'none',
+                        fontSize: '0.85rem'
+                      }}>
+                        <span style={{ color: 'var(--text-secondary)', fontWeight: 600, minWidth: '24px' }}>#{i + 1}</span>
+                        {sn.serialNumber && <span style={{ fontFamily: 'monospace' }}>SN: {sn.serialNumber}</span>}
+                        {sn.tmoSerial && <span style={{ fontFamily: 'monospace', color: 'var(--primary)' }}>TMO: {sn.tmoSerial}</span>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

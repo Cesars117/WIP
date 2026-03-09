@@ -17,8 +17,10 @@ interface Item {
   unitsPerBox: number | null;
   totalUnits: number | null;
   sku: string | null;
+  siteKitSku: string | null;
   category: { name: string };
   location: { name: string };
+  serialNumbers: Array<{ id: number; serialNumber: string | null; tmoSerial: string | null }>;
 }
 
 // Wrapper component to manage modal state - key prop on this resets the state on query change

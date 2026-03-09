@@ -199,6 +199,14 @@ const enTranslations = {
     createdAt: 'Created',
     updatedAt: 'Updated',
   },
+  serialNumbers: {
+    title: 'Serial Numbers',
+    add: 'Add Serial',
+    empty: 'No serial numbers. Click "Add Serial" to add one or more.',
+    serialNumber: 'Serial Number',
+    tmoSerial: 'TMO Serial (T-Mobile)',
+    siteKitSku: 'Site Kit SKU',
+  },
   status: {
     AVAILABLE: 'Available',
     IN_USE: 'In Use',
@@ -364,6 +372,14 @@ const esTranslations = {
     sku: 'SKU',
     createdAt: 'Creado',
     updatedAt: 'Actualizado',
+  },
+  serialNumbers: {
+    title: 'Números de Serie',
+    add: 'Agregar Serial',
+    empty: 'No hay números de serie. Haz clic en "Agregar Serial" para añadir uno o más.',
+    serialNumber: 'Número de Serie',
+    tmoSerial: 'TMO Serial (T-Mobile)',
+    siteKitSku: 'Site Kit SKU',
   },
   status: {
     AVAILABLE: 'Disponible',

@@ -25,9 +25,11 @@ export async function getDashboardStats() {
                 unitsPerBox: true,
                 totalUnits: true,
                 sku: true,
+                siteKitSku: true,
                 createdAt: true,
                 category: { select: { id: true, name: true } },
-                location: { select: { id: true, name: true } }
+                location: { select: { id: true, name: true } },
+                serialNumbers: { select: { id: true, serialNumber: true, tmoSerial: true } }
             }
         }),
         db.item.findMany({
@@ -43,9 +45,11 @@ export async function getDashboardStats() {
                 unitsPerBox: true,
                 totalUnits: true,
                 sku: true,
+                siteKitSku: true,
                 createdAt: true,
                 category: { select: { id: true, name: true } },
-                location: { select: { id: true, name: true } }
+                location: { select: { id: true, name: true } },
+                serialNumbers: { select: { id: true, serialNumber: true, tmoSerial: true } }
             }
         }),
         db.item.findMany({
@@ -61,9 +65,11 @@ export async function getDashboardStats() {
                 unitsPerBox: true,
                 totalUnits: true,
                 sku: true,
+                siteKitSku: true,
                 createdAt: true,
                 category: { select: { id: true, name: true } },
-                location: { select: { id: true, name: true } }
+                location: { select: { id: true, name: true } },
+                serialNumbers: { select: { id: true, serialNumber: true, tmoSerial: true } }
             }
         })
     ])
@@ -90,8 +96,11 @@ export async function getItems(query?: string) {
                 { description: { contains: query, mode: 'insensitive' } },
                 { sku: { contains: query, mode: 'insensitive' } },
                 { barcode: { contains: query, mode: 'insensitive' } },
+                { siteKitSku: { contains: query, mode: 'insensitive' } },
                 { category: { name: { contains: query, mode: 'insensitive' } } },
-                { location: { name: { contains: query, mode: 'insensitive' } } }
+                { location: { name: { contains: query, mode: 'insensitive' } } },
+                { serialNumbers: { some: { serialNumber: { contains: query, mode: 'insensitive' } } } },
+                { serialNumbers: { some: { tmoSerial: { contains: query, mode: 'insensitive' } } } }
             ] : undefined
         },
         select: {
@@ -105,9 +114,11 @@ export async function getItems(query?: string) {
             unitsPerBox: true,
             totalUnits: true,
             sku: true,
+            siteKitSku: true,
             createdAt: true,
             category: { select: { id: true, name: true } },
-            location: { select: { id: true, name: true } }
+            location: { select: { id: true, name: true } },
+            serialNumbers: { select: { id: true, serialNumber: true, tmoSerial: true } }
         },
         orderBy: { createdAt: 'desc' }
     })
@@ -127,8 +138,10 @@ export async function findItemByBarcode(barcode: string) {
             unitsPerBox: true,
             totalUnits: true,
             sku: true,
+            siteKitSku: true,
             category: { select: { id: true, name: true } },
-            location: { select: { id: true, name: true } }
+            location: { select: { id: true, name: true } },
+            serialNumbers: { select: { id: true, serialNumber: true, tmoSerial: true } }
         }
     })
 }
@@ -150,6 +163,18 @@ export async function createItem(formData: FormData) {
     const status = formData.get('status') as string
     let barcode = formData.get('barcode') as string | null
     const autoGenerateBarcode = formData.get('autoGenerateBarcode') === 'true'
+    const siteKitSku = formData.get('siteKitSku') as string | null
+    
+    // Serial numbers (JSON string from the form)
+    const serialNumbersJson = formData.get('serialNumbers') as string | null
+    let serialEntries: Array<{ serialNumber?: string; tmoSerial?: string }> = []
+    if (serialNumbersJson) {
+        try {
+            serialEntries = JSON.parse(serialNumbersJson)
+        } catch {
+            // ignore invalid JSON
+        }
+    }
     
     // Material-specific fields
     const unitType = formData.get('unitType') as string | null
@@ -171,6 +196,11 @@ export async function createItem(formData: FormData) {
         }
     }
 
+    // Filter out empty serial entries
+    const validSerials = serialEntries.filter(
+        (s) => (s.serialNumber && s.serialNumber.trim()) || (s.tmoSerial && s.tmoSerial.trim())
+    )
+
     await db.item.create({
         data: {
             name,
@@ -179,9 +209,16 @@ export async function createItem(formData: FormData) {
             quantity,
             status,
             barcode: barcode || null,
+            siteKitSku: siteKitSku || null,
             unitType,
             unitsPerBox,
-            totalUnits
+            totalUnits,
+            serialNumbers: validSerials.length > 0 ? {
+                create: validSerials.map((s) => ({
+                    serialNumber: s.serialNumber?.trim() || null,
+                    tmoSerial: s.tmoSerial?.trim() || null
+                }))
+            } : undefined
         }
     })
 
@@ -212,6 +249,18 @@ export async function updateItem(formData: FormData) {
     const quantity = parseInt(formData.get('quantity') as string) || 0
     const status = formData.get('status') as string || 'AVAILABLE'
     const newBarcode = formData.get('barcode') as string | null
+    const siteKitSku = formData.get('siteKitSku') as string | null
+    
+    // Serial numbers (JSON string from the form)
+    const serialNumbersJson = formData.get('serialNumbers') as string | null
+    let serialEntries: Array<{ id?: number; serialNumber?: string; tmoSerial?: string }> = []
+    if (serialNumbersJson) {
+        try {
+            serialEntries = JSON.parse(serialNumbersJson)
+        } catch {
+            // ignore invalid JSON
+        }
+    }
     
     // Material-specific fields
     const unitType = formData.get('unitType') as string | null
@@ -231,18 +280,38 @@ export async function updateItem(formData: FormData) {
         }
     }
 
-    await db.item.update({
-        where: { id },
-        data: {
-            name,
-            categoryId,
-            locationId,
-            quantity,
-            status,
-            barcode: newBarcode || null,
-            unitType,
-            unitsPerBox,
-            totalUnits
+    // Filter valid serial entries
+    const validSerials = serialEntries.filter(
+        (s) => (s.serialNumber && s.serialNumber.trim()) || (s.tmoSerial && s.tmoSerial.trim())
+    )
+
+    await db.$transaction(async (tx) => {
+        await tx.item.update({
+            where: { id },
+            data: {
+                name,
+                categoryId,
+                locationId,
+                quantity,
+                status,
+                barcode: newBarcode || null,
+                siteKitSku: siteKitSku || null,
+                unitType,
+                unitsPerBox,
+                totalUnits
+            }
+        })
+
+        // Replace all serial numbers: delete old ones and create new ones
+        await tx.serialNumber.deleteMany({ where: { itemId: id } })
+        if (validSerials.length > 0) {
+            await tx.serialNumber.createMany({
+                data: validSerials.map((s) => ({
+                    itemId: id,
+                    serialNumber: s.serialNumber?.trim() || null,
+                    tmoSerial: s.tmoSerial?.trim() || null
+                }))
+            })
         }
     })
 
@@ -254,10 +323,19 @@ export async function updateItem(formData: FormData) {
 // Eliminar artículo
 export async function deleteItem(formData: FormData) {
     const id = parseInt(formData.get('id') as string)
+    // Serial numbers are cascade-deleted by the DB relation
     await db.item.delete({
         where: { id }
     })
     revalidatePath('/')
+}
+
+// Get serial numbers for an item (used in delete confirmation)
+export async function getItemSerialNumbers(itemId: number) {
+    return db.serialNumber.findMany({
+        where: { itemId },
+        select: { id: true, serialNumber: true, tmoSerial: true }
+    })
 }
 
 // Obtener artículo por ID
@@ -275,10 +353,12 @@ export async function getItemById(id: number) {
             unitsPerBox: true,
             totalUnits: true,
             sku: true,
+            siteKitSku: true,
             categoryId: true,
             locationId: true,
             category: { select: { id: true, name: true } },
-            location: { select: { id: true, name: true } }
+            location: { select: { id: true, name: true } },
+            serialNumbers: { select: { id: true, serialNumber: true, tmoSerial: true } }
         }
     })
 }

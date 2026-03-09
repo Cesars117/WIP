@@ -16,8 +16,10 @@ interface Item {
   unitsPerBox: number | null
   totalUnits: number | null
   sku: string | null
+  siteKitSku: string | null
   category: { name: string }
   location: { name: string }
+  serialNumbers: Array<{ id: number; serialNumber: string | null; tmoSerial: string | null }>
 }
 
 interface SearchResultsListProps {
@@ -277,6 +279,31 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
                     </div>
                   )}
 
+                  {/* Site Kit SKU */}
+                  {item.siteKitSku && (
+                    <div>
+                      <label style={{ 
+                        fontSize: '0.75rem', 
+                        fontWeight: 600, 
+                        color: 'var(--text-secondary)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        marginBottom: '8px',
+                        display: 'block'
+                      }}>
+                        Site Kit SKU
+                      </label>
+                      <p style={{ 
+                        margin: 0, 
+                        color: 'var(--text)',
+                        fontFamily: 'monospace',
+                        fontSize: '0.875rem'
+                      }}>
+                        {item.siteKitSku}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Unit Type Details */}
                   {isBoxType && (
                     <>
@@ -315,6 +342,38 @@ export function SearchResultsList({ items, query }: SearchResultsListProps) {
                     </>
                   )}
                 </div>
+
+                {/* Serial Numbers */}
+                {item.serialNumbers && item.serialNumbers.length > 0 && (
+                  <div style={{ padding: '12px 0' }}>
+                    <label style={{ 
+                      fontSize: '0.75rem', 
+                      fontWeight: 600, 
+                      color: 'var(--primary)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      marginBottom: '8px',
+                      display: 'block'
+                    }}>
+                      🔢 {t('serialNumbers.title')} ({item.serialNumbers.length})
+                    </label>
+                    <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                      {item.serialNumbers.map((sn, i) => (
+                        <div key={sn.id} style={{
+                          display: 'flex',
+                          gap: '12px',
+                          padding: '4px 0',
+                          fontSize: '0.8rem',
+                          borderBottom: i < item.serialNumbers.length - 1 ? '1px solid var(--border-light)' : 'none'
+                        }}>
+                          <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>#{i + 1}</span>
+                          {sn.serialNumber && <span style={{ fontFamily: 'monospace' }}>SN: {sn.serialNumber}</span>}
+                          {sn.tmoSerial && <span style={{ fontFamily: 'monospace', color: 'var(--primary)' }}>TMO: {sn.tmoSerial}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div style={{ 
