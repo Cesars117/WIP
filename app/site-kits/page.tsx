@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Package, Plus, Camera, ArrowLeft, Loader2 } from 'lucide-react'
+import { Package, Camera, ArrowLeft, Loader2, FileText } from 'lucide-react'
 import { BOMPhotoImporter } from '@/app/components/BOMPhotoImporter'
+import { BOMManualEntry } from '@/app/components/BOMManualEntry'
 
 interface SiteKitSummary {
   id: number
@@ -23,12 +24,6 @@ export default function SiteKitsPage() {
   const [loading, setLoading] = useState(true)
   const [showImporter, setShowImporter] = useState(false)
   const [showNewForm, setShowNewForm] = useState(false)
-  const [newForm, setNewForm] = useState({
-    siteKitId: '', bomId: '', siteId: '', projectName: '',
-    pallets: '', authNumber: '', mslLocation: '', company: '',
-    catsCode: '', subcontractor: '',
-  })
-  const [saving, setSaving] = useState(false)
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -62,27 +57,6 @@ export default function SiteKitsPage() {
     )
   }
 
-  const handleCreateManual = async () => {
-    if (!newForm.siteKitId.trim()) return
-    setSaving(true)
-    try {
-      const res = await fetch('/api/site-kits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...newForm, items: [] }),
-      })
-      if (res.ok) {
-        setShowNewForm(false)
-        setNewForm({ siteKitId: '', bomId: '', siteId: '', projectName: '', pallets: '', authNumber: '', mslLocation: '', company: '', catsCode: '', subcontractor: '' })
-        loadData()
-      }
-    } catch {
-      // ignore
-    } finally {
-      setSaving(false)
-    }
-  }
-
   return (
     <main className="container" style={{ paddingTop: '4rem', paddingBottom: '4rem' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -98,7 +72,7 @@ export default function SiteKitsPage() {
             <Camera size={18} /> Import from Photo
           </button>
           <button onClick={() => setShowNewForm(true)} className="btn btn-primary">
-            <Plus size={18} /> New Site Kit
+            <FileText size={18} /> Entrada Manual
           </button>
         </div>
       </header>
@@ -168,46 +142,12 @@ export default function SiteKitsPage() {
         />
       )}
 
-      {/* New Site Kit Manual Form Modal */}
+      {/* New Site Kit — Full Manual BOM Entry */}
       {showNewForm && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000,
-        }}>
-          <div className="card" style={{ maxWidth: '500px', width: '100%', padding: '2rem' }}>
-            <h2 className="heading-lg" style={{ marginBottom: '1.5rem' }}>New Site Kit</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-              {[
-                { label: 'Site Kit ID *', key: 'siteKitId' },
-                { label: 'BOM ID', key: 'bomId' },
-                { label: 'Site ID', key: 'siteId' },
-                { label: 'Project Name', key: 'projectName' },
-                { label: 'Pallets', key: 'pallets' },
-                { label: 'Auth #', key: 'authNumber' },
-                { label: 'MSL Location', key: 'mslLocation' },
-                { label: 'Company', key: 'company' },
-                { label: 'CATS Code', key: 'catsCode' },
-                { label: 'Subcontractor', key: 'subcontractor' },
-              ].map(({ label, key }) => (
-                <div key={key}>
-                  <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{label}</label>
-                  <input
-                    className="input"
-                    value={newForm[key as keyof typeof newForm]}
-                    onChange={(e) => setNewForm({ ...newForm, [key]: e.target.value })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-              ))}
-            </div>
-            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
-              <button onClick={() => setShowNewForm(false)} className="btn" style={{ flex: 1, background: 'var(--surface-secondary)' }}>Cancel</button>
-              <button onClick={handleCreateManual} disabled={saving || !newForm.siteKitId.trim()} className="btn btn-primary" style={{ flex: 1 }}>
-                {saving ? <Loader2 size={16} className="animate-spin" /> : 'Create'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <BOMManualEntry
+          onImportComplete={() => { setShowNewForm(false); loadData() }}
+          onClose={() => setShowNewForm(false)}
+        />
       )}
     </main>
   )
