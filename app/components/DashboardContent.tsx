@@ -1,6 +1,6 @@
 'use client'
 
-import { Package, MapPin, BarChart3, Plus, Edit, Shield } from "lucide-react";
+import { Package, MapPin, BarChart3, Plus, Edit, Shield, Truck, ClipboardList } from "lucide-react";
 import Link from 'next/link';
 import { useLanguage } from '@/app/contexts/LanguageContext';
 import { SearchModal } from './SearchModal';
@@ -163,6 +163,49 @@ export function DashboardContent({
                 <h3 style={{ margin: 0, fontWeight: 600, fontSize: "1.125rem" }}>{t('locations.title')}</h3>
                 <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.875rem", marginTop: "4px" }}>
                   {t('locations.manage')}
+                </p>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* Site Kits & Audit Management */}
+      <section style={{ marginBottom: "3rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
+          <Link href="/site-kits" className="card" style={{ textDecoration: 'none', color: 'inherit', padding: '1.5rem' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div style={{ 
+                background: "rgba(168, 85, 247, 0.1)", 
+                padding: "12px", 
+                borderRadius: "8px", 
+                color: "#a855f7"
+              }}>
+                <Truck size={24} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontWeight: 600, fontSize: "1.125rem" }}>T-Mobile Site Kits</h3>
+                <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.875rem", marginTop: "4px" }}>
+                  BOM comparison & verification
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/audit-log" className="card" style={{ textDecoration: 'none', color: 'inherit', padding: '1.5rem' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div style={{ 
+                background: "rgba(245, 158, 11, 0.1)", 
+                padding: "12px", 
+                borderRadius: "8px", 
+                color: "#f59e0b"
+              }}>
+                <ClipboardList size={24} />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontWeight: 600, fontSize: "1.125rem" }}>Audit Log</h3>
+                <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.875rem", marginTop: "4px" }}>
+                  System activity history
                 </p>
               </div>
             </div>

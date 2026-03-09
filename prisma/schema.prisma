@@ -31,6 +31,7 @@ model Item {
   locationId  Int
 
   serialNumbers SerialNumber[]
+  siteKitAssetTags SiteKitAssetTag[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -43,6 +44,7 @@ model SerialNumber {
   
   item          Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemId        Int
+  siteKitAssetTags SiteKitAssetTag[]
 
   createdAt     DateTime @default(now())
 }
@@ -61,4 +63,71 @@ model Location {
   type        String   @default("WAREHOUSE") // WAREHOUSE, VEHICLE, SITE
   subcategory String?  // For areas like "Box 1", "Personal Milwaukee Box", etc.
   items       Item[]
+}
+
+// --- Audit Log ---
+model AuditLog {
+  id            Int      @id @default(autoincrement())
+  userId        String
+  userEmail     String?
+  userName      String?
+  action        String   // CREATED, UPDATED, DELETED, STATUS_CHANGED, QTY_CHANGED, VERIFIED, LINKED
+  entityType    String   // ITEM, SERIAL_NUMBER, SITE_KIT, SITE_KIT_ITEM, ASSET_TAG
+  entityId      Int
+  entityLabel   String?
+  fieldChanged  String?
+  oldValue      String?
+  newValue      String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+}
+
+// --- T-Mobile BOM / Site Kits ---
+model SiteKit {
+  id            Int       @id @default(autoincrement())
+  siteKitId     String    @unique  // e.g. "SITEKIT_HNYH0Q4_12"
+  bomId         String?
+  siteId        String?
+  projectName   String?
+  pallets       Int?
+  authNumber    String?
+  mslLocation   String?
+  company       String?
+  catsCode      String?
+  subcontractor String?
+  dateCompleted DateTime?
+  status        String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETE, DISCREPANCY
+  items         SiteKitItem[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model SiteKitItem {
+  id               Int       @id @default(autoincrement())
+  siteKit          SiteKit   @relation(fields: [siteKitId], references: [id], onDelete: Cascade)
+  siteKitId        Int
+  siteKitSku       String
+  description      String
+  quantityExpected Int
+  quantityReceived Int       @default(0)
+  status           String    @default("PENDING") // PENDING, VERIFIED, MISSING, SURPLUS, PARTIAL
+  notes            String?
+  assetTags        SiteKitAssetTag[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+model SiteKitAssetTag {
+  id              Int           @id @default(autoincrement())
+  siteKitItem     SiteKitItem   @relation(fields: [siteKitItemId], references: [id], onDelete: Cascade)
+  siteKitItemId   Int
+  assetTag        String        // TM########
+  status          String        @default("EXPECTED") // EXPECTED, RECEIVED, MISSING
+  linkedItem      Item?         @relation(fields: [linkedItemId], references: [id])
+  linkedItemId    Int?
+  linkedSerial    SerialNumber? @relation(fields: [linkedSerialId], references: [id])
+  linkedSerialId  Int?
+  verifiedAt      DateTime?
+  verifiedBy      String?
+  createdAt       DateTime      @default(now())
 }

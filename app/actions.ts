@@ -1,8 +1,11 @@
 'use server'
 
 import db from '@/lib/db'
+import { createAuditLog } from '@/lib/audit'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 import fs from 'fs'
 import path from 'path'
 
@@ -201,25 +204,35 @@ export async function createItem(formData: FormData) {
         (s) => (s.serialNumber && s.serialNumber.trim()) || (s.tmoSerial && s.tmoSerial.trim())
     )
 
-    await db.item.create({
-        data: {
-            name,
-            categoryId,
-            locationId,
-            quantity,
-            status,
-            barcode: barcode || null,
-            siteKitSku: siteKitSku || null,
-            unitType,
-            unitsPerBox,
-            totalUnits,
-            serialNumbers: validSerials.length > 0 ? {
-                create: validSerials.map((s) => ({
-                    serialNumber: s.serialNumber?.trim() || null,
-                    tmoSerial: s.tmoSerial?.trim() || null
-                }))
-            } : undefined
-        }
+    await db.$transaction(async (tx) => {
+        const item = await tx.item.create({
+            data: {
+                name,
+                categoryId,
+                locationId,
+                quantity,
+                status,
+                barcode: barcode || null,
+                siteKitSku: siteKitSku || null,
+                unitType,
+                unitsPerBox,
+                totalUnits,
+                serialNumbers: validSerials.length > 0 ? {
+                    create: validSerials.map((s) => ({
+                        serialNumber: s.serialNumber?.trim() || null,
+                        tmoSerial: s.tmoSerial?.trim() || null
+                    }))
+                } : undefined
+            }
+        })
+
+        const session = await getServerSession(authOptions)
+        await createAuditLog(tx, session, {
+            action: 'CREATED',
+            entityType: 'ITEM',
+            entityId: item.id,
+            entityLabel: name,
+        })
     })
 
     revalidatePath('/')
@@ -313,6 +326,39 @@ export async function updateItem(formData: FormData) {
                 }))
             })
         }
+
+        // Audit logging
+        const session = await getServerSession(authOptions)
+        if (item.quantity !== quantity) {
+            await createAuditLog(tx, session, {
+                action: 'QTY_CHANGED',
+                entityType: 'ITEM',
+                entityId: id,
+                entityLabel: name,
+                fieldChanged: 'quantity',
+                oldValue: String(item.quantity),
+                newValue: String(quantity),
+            })
+        }
+        if (item.status !== status) {
+            await createAuditLog(tx, session, {
+                action: 'STATUS_CHANGED',
+                entityType: 'ITEM',
+                entityId: id,
+                entityLabel: name,
+                fieldChanged: 'status',
+                oldValue: item.status,
+                newValue: status,
+            })
+        }
+        if (item.quantity === quantity && item.status === status) {
+            await createAuditLog(tx, session, {
+                action: 'UPDATED',
+                entityType: 'ITEM',
+                entityId: id,
+                entityLabel: name,
+            })
+        }
     })
 
     revalidatePath('/')
@@ -323,9 +369,17 @@ export async function updateItem(formData: FormData) {
 // Eliminar artículo
 export async function deleteItem(formData: FormData) {
     const id = parseInt(formData.get('id') as string)
+    const item = await db.item.findUnique({ where: { id } })
     // Serial numbers are cascade-deleted by the DB relation
-    await db.item.delete({
-        where: { id }
+    await db.$transaction(async (tx) => {
+        await tx.item.delete({ where: { id } })
+        const session = await getServerSession(authOptions)
+        await createAuditLog(tx, session, {
+            action: 'DELETED',
+            entityType: 'ITEM',
+            entityId: id,
+            entityLabel: item?.name || `Item #${id}`,
+        })
     })
     revalidatePath('/')
 }
