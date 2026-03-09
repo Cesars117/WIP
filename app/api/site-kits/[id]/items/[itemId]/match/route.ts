@@ -37,7 +37,6 @@ export async function POST(
       }
 
       // Link each WIP item
-      let linkedCount = 0
       for (const wipItemId of itemIds) {
         const wipItem = await tx.item.findUnique({
           where: { id: parseInt(wipItemId) },
@@ -69,7 +68,6 @@ export async function POST(
           })
         }
 
-        linkedCount += wipItem.quantity || 1
       }
 
       // Recalculate quantityReceived
