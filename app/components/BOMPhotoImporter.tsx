@@ -43,6 +43,26 @@ export function BOMPhotoImporter({ existingSiteKitId, onImportComplete, onClose 
   // Editable parsed data
   const [editableData, setEditableData] = useState<ParsedBOM | null>(null)
 
+  const compressImage = (dataUrl: string, maxWidth = 1600): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = document.createElement('img')
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let { width, height } = img
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width)
+          width = maxWidth
+        }
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')!
+        ctx.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', 0.8))
+      }
+      img.src = dataUrl
+    })
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files) return
@@ -50,9 +70,10 @@ export function BOMPhotoImporter({ existingSiteKitId, onImportComplete, onClose 
     Array.from(files).forEach((file) => {
       if (!file.type.startsWith('image/')) return
       const reader = new FileReader()
-      reader.onload = (ev) => {
+      reader.onload = async (ev) => {
         const result = ev.target?.result as string
-        setImages((prev) => [...prev, result])
+        const compressed = await compressImage(result)
+        setImages((prev) => [...prev, compressed])
       }
       reader.readAsDataURL(file)
     })
@@ -75,8 +96,9 @@ export function BOMPhotoImporter({ existingSiteKitId, onImportComplete, onClose 
       })
 
       if (!res.ok) {
-        const errData = await res.json()
-        throw new Error(errData.error || 'OCR failed')
+        let msg = `OCR failed (${res.status})`
+        try { const errData = await res.json(); msg = errData.error || msg } catch { /* non-JSON response */ }
+        throw new Error(msg)
       }
 
       const data: ParsedBOM = await res.json()
@@ -121,8 +143,9 @@ export function BOMPhotoImporter({ existingSiteKitId, onImportComplete, onClose 
           body: JSON.stringify(editableData),
         })
         if (!res.ok) {
-          const errData = await res.json()
-          throw new Error(errData.error || 'Failed to create site kit')
+          let msg = 'Failed to create site kit'
+          try { const errData = await res.json(); msg = errData.error || msg } catch { /* non-JSON response */ }
+          throw new Error(msg)
         }
       }
       onImportComplete()

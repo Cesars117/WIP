@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import Anthropic from '@anthropic-ai/sdk'
 
+// Allow large request bodies for base64 images (up to 20MB)
+export const maxDuration = 60 // seconds
+export const dynamic = 'force-dynamic'
+
 const SYSTEM_PROMPT = `You are a precise BOM document parser. Extract structured data from Tellworks/T-Mobile Site Kit BOM documents.
 
 CRITICAL RULES:
