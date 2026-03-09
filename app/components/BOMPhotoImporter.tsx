@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Image from 'next/image'
 import { Upload, X, Loader2, Check, AlertTriangle } from 'lucide-react'
 
 interface ParsedItem {
@@ -180,7 +181,7 @@ export function BOMPhotoImporter({ existingSiteKitId, onImportComplete, onClose 
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
                 {images.map((img, i) => (
                   <div key={i} style={{ position: 'relative', width: '120px', height: '120px' }}>
-                    <img src={img} alt={`BOM page ${i + 1}`} style={{
+                    <Image src={img} alt={`BOM page ${i + 1}`} width={120} height={120} style={{
                       width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px',
                     }} />
                     <button

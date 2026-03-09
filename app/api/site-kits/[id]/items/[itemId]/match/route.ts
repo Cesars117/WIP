@@ -73,7 +73,6 @@ export async function POST(
       }
 
       // Recalculate quantityReceived
-      const newReceived = Math.min(linkedCount + skItem.quantityReceived, skItem.quantityExpected + 100) // allow surplus
       const actualReceived = skItem.quantityReceived + (itemIds.length)
 
       // Determine new status
