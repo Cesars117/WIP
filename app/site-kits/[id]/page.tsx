@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Camera, Loader2, CheckCircle2, XCircle, AlertCircle, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Camera, Loader2, CheckCircle2, XCircle, AlertCircle, TrendingUp, Trash2, Pencil, Plus, Save, X } from 'lucide-react'
 import { SiteKitMatchPanel } from '@/app/components/SiteKitMatchPanel'
 import { SiteKitReportButton } from '@/app/components/SiteKitReportButton'
 import { BOMPhotoImporter } from '@/app/components/BOMPhotoImporter'
+import { BOMManualEntry } from '@/app/components/BOMManualEntry'
 
 interface AssetTag {
   id: number
@@ -53,6 +54,11 @@ export default function SiteKitDetailPage() {
   const [loading, setLoading] = useState(true)
   const [matchingItem, setMatchingItem] = useState<SiteKitItemData | null>(null)
   const [showImporter, setShowImporter] = useState(false)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [editingItemId, setEditingItemId] = useState<number | null>(null)
+  const [editForm, setEditForm] = useState({ siteKitSku: '', description: '', quantityExpected: 0 })
+  const [deletingItemId, setDeletingItemId] = useState<number | null>(null)
+  const [actionLoading, setActionLoading] = useState(false)
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -67,6 +73,46 @@ export default function SiteKitDetailPage() {
   }, [id])
 
   useEffect(() => { loadData() }, [loadData])
+
+  const startEdit = (item: SiteKitItemData) => {
+    setEditingItemId(item.id)
+    setEditForm({ siteKitSku: item.siteKitSku, description: item.description, quantityExpected: item.quantityExpected })
+  }
+
+  const cancelEdit = () => {
+    setEditingItemId(null)
+    setEditForm({ siteKitSku: '', description: '', quantityExpected: 0 })
+  }
+
+  const saveEdit = async (itemId: number) => {
+    setActionLoading(true)
+    try {
+      const res = await fetch(`/api/site-kits/${id}/items/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm),
+      })
+      if (res.ok) {
+        setEditingItemId(null)
+        loadData()
+      }
+    } catch { /* ignore */ } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const deleteItem = async (itemId: number) => {
+    setActionLoading(true)
+    try {
+      const res = await fetch(`/api/site-kits/${id}/items/${itemId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setDeletingItemId(null)
+        loadData()
+      }
+    } catch { /* ignore */ } finally {
+      setActionLoading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -131,6 +177,9 @@ export default function SiteKitDetailPage() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button onClick={() => setShowManualEntry(true)} className="btn" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
+            <Plus size={16} /> Agregar Items
+          </button>
           <button onClick={() => setShowImporter(true)} className="btn" style={{ background: 'rgba(168,85,247,0.1)', color: '#a855f7' }}>
             <Camera size={16} /> Import BOM
           </button>
@@ -198,7 +247,7 @@ export default function SiteKitDetailPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-light)', background: 'var(--bg-elevated)' }}>
-                {['SKU', 'Description', 'Expected', 'Received', 'Diff', 'Status', 'Asset Tags', 'Action'].map((h) => (
+                {['SKU', 'Description', 'Expected', 'Received', 'Diff', 'Status', 'Asset Tags', 'Actions'].map((h) => (
                   <th key={h} style={{ padding: '12px 16px', color: 'var(--text-secondary)', fontWeight: 500, fontSize: '0.813rem' }}>{h}</th>
                 ))}
               </tr>
@@ -206,11 +255,28 @@ export default function SiteKitDetailPage() {
             <tbody>
               {data.items.map((item) => {
                 const diff = item.quantityReceived - item.quantityExpected
+                const isEditing = editingItemId === item.id
+                const isDeleting = deletingItemId === item.id
                 return (
-                  <tr key={item.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                    <td style={{ padding: '12px 16px', fontWeight: 600 }}>{item.siteKitSku}</td>
-                    <td style={{ padding: '12px 16px', fontSize: '0.875rem', maxWidth: '250px' }}>{item.description}</td>
-                    <td style={{ padding: '12px 16px', fontWeight: 500 }}>{item.quantityExpected}</td>
+                  <tr key={item.id} style={{ borderBottom: '1px solid var(--border-light)', background: isDeleting ? 'rgba(239,68,68,0.05)' : 'transparent' }}>
+                    <td style={{ padding: '12px 16px', fontWeight: 600 }}>
+                      {isEditing ? (
+                        <input className="input" style={{ fontSize: '0.813rem', padding: '4px 6px', width: '80px', fontFamily: 'monospace' }}
+                          value={editForm.siteKitSku} onChange={(e) => setEditForm(f => ({ ...f, siteKitSku: e.target.value }))} />
+                      ) : item.siteKitSku}
+                    </td>
+                    <td style={{ padding: '12px 16px', fontSize: '0.875rem', maxWidth: '250px' }}>
+                      {isEditing ? (
+                        <input className="input" style={{ fontSize: '0.813rem', padding: '4px 6px', width: '100%' }}
+                          value={editForm.description} onChange={(e) => setEditForm(f => ({ ...f, description: e.target.value }))} />
+                      ) : item.description}
+                    </td>
+                    <td style={{ padding: '12px 16px', fontWeight: 500 }}>
+                      {isEditing ? (
+                        <input className="input" type="number" min={0} style={{ fontSize: '0.813rem', padding: '4px 6px', width: '60px', textAlign: 'center' }}
+                          value={editForm.quantityExpected} onChange={(e) => setEditForm(f => ({ ...f, quantityExpected: parseInt(e.target.value) || 0 }))} />
+                      ) : item.quantityExpected}
+                    </td>
                     <td style={{ padding: '12px 16px', fontWeight: 500 }}>{item.quantityReceived}</td>
                     <td style={{
                       padding: '12px 16px', fontWeight: 600,
@@ -238,13 +304,41 @@ export default function SiteKitDetailPage() {
                       ) : '—'}
                     </td>
                     <td style={{ padding: '12px 16px' }}>
-                      <button
-                        onClick={() => setMatchingItem(item)}
-                        className="btn"
-                        style={{ padding: '4px 10px', fontSize: '0.75rem', background: 'rgba(99,102,241,0.1)', color: 'var(--primary)' }}
-                      >
-                        <AlertCircle size={14} /> Match
-                      </button>
+                      {isDeleting ? (
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.7rem', color: '#ef4444' }}>¿Eliminar?</span>
+                          <button onClick={() => deleteItem(item.id)} disabled={actionLoading}
+                            className="btn" style={{ padding: '3px 8px', fontSize: '0.7rem', background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>
+                            {actionLoading ? <Loader2 size={12} className="animate-spin" /> : 'Sí'}
+                          </button>
+                          <button onClick={() => setDeletingItemId(null)} className="btn" style={{ padding: '3px 8px', fontSize: '0.7rem', background: 'var(--surface-secondary)' }}>No</button>
+                        </div>
+                      ) : isEditing ? (
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button onClick={() => saveEdit(item.id)} disabled={actionLoading}
+                            title="Guardar" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#10b981', padding: '4px' }}>
+                            {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                          </button>
+                          <button onClick={cancelEdit} title="Cancelar" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', padding: '4px' }}>
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', gap: '4px' }}>
+                          <button onClick={() => setMatchingItem(item)} className="btn"
+                            style={{ padding: '4px 8px', fontSize: '0.7rem', background: 'rgba(99,102,241,0.1)', color: 'var(--primary)' }}>
+                            <AlertCircle size={12} /> Match
+                          </button>
+                          <button onClick={() => startEdit(item)} title="Editar"
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#3b82f6', padding: '4px' }}>
+                            <Pencil size={14} />
+                          </button>
+                          <button onClick={() => setDeletingItemId(item.id)} title="Eliminar"
+                            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 )
@@ -261,6 +355,15 @@ export default function SiteKitDetailPage() {
           item={matchingItem}
           onClose={() => setMatchingItem(null)}
           onMatched={() => { setMatchingItem(null); loadData() }}
+        />
+      )}
+
+      {/* BOM Manual Entry */}
+      {showManualEntry && (
+        <BOMManualEntry
+          existingSiteKitId={data.id}
+          onImportComplete={() => { setShowManualEntry(false); loadData() }}
+          onClose={() => setShowManualEntry(false)}
         />
       )}
 
