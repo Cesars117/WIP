@@ -3,10 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Camera, Loader2, CheckCircle2, XCircle, AlertCircle, TrendingUp, Trash2, Pencil, Plus, Save, X } from 'lucide-react'
+import { ArrowLeft, Loader2, CheckCircle2, XCircle, AlertCircle, TrendingUp, Trash2, Pencil, Plus, Save, X, Search } from 'lucide-react'
 import { SiteKitMatchPanel } from '@/app/components/SiteKitMatchPanel'
 import { SiteKitReportButton } from '@/app/components/SiteKitReportButton'
-import { BOMPhotoImporter } from '@/app/components/BOMPhotoImporter'
 import { BOMManualEntry } from '@/app/components/BOMManualEntry'
 
 interface AssetTag {
@@ -53,7 +52,6 @@ export default function SiteKitDetailPage() {
   const [data, setData] = useState<SiteKitData | null>(null)
   const [loading, setLoading] = useState(true)
   const [matchingItem, setMatchingItem] = useState<SiteKitItemData | null>(null)
-  const [showImporter, setShowImporter] = useState(false)
   const [showManualEntry, setShowManualEntry] = useState(false)
   const [editingItemId, setEditingItemId] = useState<number | null>(null)
   const [editForm, setEditForm] = useState({ siteKitSku: '', description: '', quantityExpected: 0 })
@@ -179,9 +177,6 @@ export default function SiteKitDetailPage() {
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <button onClick={() => setShowManualEntry(true)} className="btn" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
             <Plus size={16} /> Agregar Items
-          </button>
-          <button onClick={() => setShowImporter(true)} className="btn" style={{ background: 'rgba(168,85,247,0.1)', color: '#a855f7' }}>
-            <Camera size={16} /> Import BOM
           </button>
           <SiteKitReportButton siteKitDbId={data.id} status={data.status} />
         </div>
@@ -364,15 +359,6 @@ export default function SiteKitDetailPage() {
           existingSiteKitId={data.id}
           onImportComplete={() => { setShowManualEntry(false); loadData() }}
           onClose={() => setShowManualEntry(false)}
-        />
-      )}
-
-      {/* BOM Photo Importer */}
-      {showImporter && (
-        <BOMPhotoImporter
-          existingSiteKitId={data.id}
-          onImportComplete={() => { setShowImporter(false); loadData() }}
-          onClose={() => setShowImporter(false)}
         />
       )}
     </main>

@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Package, Camera, ArrowLeft, Loader2, FileText } from 'lucide-react'
-import { BOMPhotoImporter } from '@/app/components/BOMPhotoImporter'
+import { Package, ArrowLeft, Loader2, FileText } from 'lucide-react'
 import { BOMManualEntry } from '@/app/components/BOMManualEntry'
 
 interface SiteKitSummary {
@@ -22,7 +21,6 @@ interface SiteKitSummary {
 export default function SiteKitsPage() {
   const [siteKits, setSiteKits] = useState<SiteKitSummary[]>([])
   const [loading, setLoading] = useState(true)
-  const [showImporter, setShowImporter] = useState(false)
   const [showNewForm, setShowNewForm] = useState(false)
 
   const loadData = useCallback(async () => {
@@ -68,9 +66,6 @@ export default function SiteKitsPage() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <button onClick={() => setShowImporter(true)} className="btn" style={{ background: 'rgba(168,85,247,0.1)', color: '#a855f7' }}>
-            <Camera size={18} /> Import from Photo
-          </button>
           <button onClick={() => setShowNewForm(true)} className="btn btn-primary">
             <FileText size={18} /> Entrada Manual
           </button>
@@ -132,14 +127,6 @@ export default function SiteKitsPage() {
             </table>
           </div>
         </div>
-      )}
-
-      {/* BOM Photo Importer Modal */}
-      {showImporter && (
-        <BOMPhotoImporter
-          onImportComplete={() => { setShowImporter(false); loadData() }}
-          onClose={() => setShowImporter(false)}
-        />
       )}
 
       {/* New Site Kit — Full Manual BOM Entry */}

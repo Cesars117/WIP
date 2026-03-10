@@ -40,10 +40,12 @@ interface SiteKitMatchPanelProps {
 
 export function SiteKitMatchPanel({ siteKitDbId, item, onClose, onMatched }: SiteKitMatchPanelProps) {
   const [wipItems, setWipItems] = useState<WipItem[]>([])
+  const [suggestedItems, setSuggestedItems] = useState<WipItem[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [linking, setLinking] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showSuggestions, setShowSuggestions] = useState(false)
 
   useEffect(() => {
     loadWipItems()
@@ -53,11 +55,26 @@ export function SiteKitMatchPanel({ siteKitDbId, item, onClose, onMatched }: Sit
   const loadWipItems = async () => {
     setLoading(true)
     try {
-      // Search WIP items by siteKitSku, ordered by createdAt DESC
+      // Search WIP items by siteKitSku
       const res = await fetch(`/api/items/search?sku=${encodeURIComponent(item.siteKitSku)}`)
       if (res.ok) {
         const data = await res.json()
         setWipItems(data)
+      }
+
+      // Also search by description keywords for suggestions
+      const keywords = item.description
+        .replace(/[^a-zA-Z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter((w: string) => w.length >= 3)
+        .slice(0, 3)
+        .join(' ')
+      if (keywords) {
+        const sugRes = await fetch(`/api/items/search?q=${encodeURIComponent(keywords)}`)
+        if (sugRes.ok) {
+          const sugData = await sugRes.json()
+          setSuggestedItems(sugData)
+        }
       }
     } catch {
       // ignore
@@ -162,39 +179,125 @@ export function SiteKitMatchPanel({ siteKitDbId, item, onClose, onMatched }: Sit
             <Loader2 size={24} className="animate-spin" style={{ margin: '0 auto' }} />
             <p style={{ marginTop: '0.5rem' }}>Loading WIP items...</p>
           </div>
-        ) : wipItems.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
-            <Package size={40} style={{ margin: '0 auto', opacity: 0.5 }} />
-            <p style={{ marginTop: '0.5rem' }}>No WIP items available for this SKU</p>
-          </div>
         ) : (
-          wipItems.map((wip) => (
-            <div
-              key={wip.id}
-              onClick={() => toggleSelect(wip.id)}
-              style={{
-                padding: '0.75rem',
-                border: `2px solid ${selected.has(wip.id) ? 'var(--primary)' : 'var(--border-light)'}`,
-                borderRadius: '8px',
-                marginBottom: '0.5rem',
-                cursor: 'pointer',
-                background: selected.has(wip.id) ? 'rgba(99,102,241,0.08)' : 'transparent',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{wip.name}</span>
-                {statusBadge(wip.status)}
+          <>
+            {/* Exact SKU matches */}
+            {wipItems.length > 0 && (
+              <>
+                <p style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                  Coincidencias por SKU ({wipItems.length})
+                </p>
+                {wipItems.map((wip) => (
+                  <div
+                    key={wip.id}
+                    onClick={() => toggleSelect(wip.id)}
+                    style={{
+                      padding: '0.75rem',
+                      border: `2px solid ${selected.has(wip.id) ? 'var(--primary)' : 'var(--border-light)'}`,
+                      borderRadius: '8px',
+                      marginBottom: '0.5rem',
+                      cursor: 'pointer',
+                      background: selected.has(wip.id) ? 'rgba(99,102,241,0.08)' : 'transparent',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{wip.name}</span>
+                      {statusBadge(wip.status)}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                      <span>Qty: {wip.quantity}</span> · <span>{wip.location.name}</span> · <span>{new Date(wip.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    {wip.siteKitSku && (
+                      <div style={{ fontSize: '0.7rem', color: 'var(--primary)', marginTop: '0.25rem' }}>
+                        SKU: {wip.siteKitSku}
+                      </div>
+                    )}
+                    {wip.serialNumbers.length > 0 && (
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                        S/N: {wip.serialNumbers.map((sn) => sn.tmoSerial || sn.serialNumber).join(', ')}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* No SKU matches — show empty state */}
+            {wipItems.length === 0 && (
+              <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-secondary)' }}>
+                <Package size={32} style={{ margin: '0 auto', opacity: 0.5 }} />
+                <p style={{ marginTop: '0.5rem', fontSize: '0.813rem' }}>No hay items con SKU exacto</p>
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                <span>Qty: {wip.quantity}</span> · <span>{wip.location.name}</span> · <span>{new Date(wip.createdAt).toLocaleDateString()}</span>
-              </div>
-              {wip.serialNumbers.length > 0 && (
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                  S/N: {wip.serialNumbers.map((sn) => sn.tmoSerial || sn.serialNumber).join(', ')}
-                </div>
-              )}
-            </div>
-          ))
+            )}
+
+            {/* Suggested matches by description */}
+            {suggestedItems.length > 0 && (() => {
+              const skuIds = new Set(wipItems.map(w => w.id))
+              const filtered = suggestedItems.filter(s => !skuIds.has(s.id))
+              if (filtered.length === 0) return null
+              return (
+                <>
+                  <div style={{ marginTop: wipItems.length > 0 ? '1rem' : '0' }}>
+                    <button
+                      onClick={() => setShowSuggestions(!showSuggestions)}
+                      style={{
+                        background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
+                        borderRadius: '8px', padding: '8px 12px', width: '100%', cursor: 'pointer',
+                        fontSize: '0.75rem', fontWeight: 600, color: '#f59e0b',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                      }}
+                    >
+                      <Package size={14} />
+                      {showSuggestions ? 'Ocultar' : 'Ver'} {filtered.length} posible{filtered.length !== 1 ? 's' : ''} coincidencia{filtered.length !== 1 ? 's' : ''} por nombre
+                    </button>
+                  </div>
+                  {showSuggestions && (
+                    <div style={{ marginTop: '0.5rem' }}>
+                      {filtered.map((wip) => (
+                        <div
+                          key={wip.id}
+                          onClick={() => toggleSelect(wip.id)}
+                          style={{
+                            padding: '0.75rem',
+                            border: `2px solid ${selected.has(wip.id) ? 'var(--primary)' : 'rgba(245,158,11,0.3)'}`,
+                            borderRadius: '8px',
+                            marginBottom: '0.5rem',
+                            cursor: 'pointer',
+                            background: selected.has(wip.id) ? 'rgba(99,102,241,0.08)' : 'rgba(245,158,11,0.04)',
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>{wip.name}</span>
+                            {statusBadge(wip.status)}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                            <span>Qty: {wip.quantity}</span> · <span>{wip.location.name}</span> · <span>{new Date(wip.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          {wip.siteKitSku && (
+                            <div style={{ fontSize: '0.7rem', color: 'var(--primary)', marginTop: '0.25rem' }}>
+                              SKU: {wip.siteKitSku}
+                            </div>
+                          )}
+                          {wip.serialNumbers.length > 0 && (
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                              S/N: {wip.serialNumbers.map((sn) => sn.tmoSerial || sn.serialNumber).join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )
+            })()}
+
+            {/* No matches at all */}
+            {wipItems.length === 0 && suggestedItems.length === 0 && (
+              <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+                No se encontraron posibles coincidencias por nombre
+              </p>
+            )}
+          </>
         )}
       </div>
 
