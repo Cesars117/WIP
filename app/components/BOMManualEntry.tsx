@@ -43,7 +43,10 @@ export function BOMManualEntry({ existingSiteKitId, onImportComplete, onClose }:
   }
 
   const removeItem = (idx: number) => {
-    setItems(prev => prev.filter((_, i) => i !== idx))
+    setItems(prev => {
+      const filtered = prev.filter((_, i) => i !== idx)
+      return filtered.length === 0 ? [{ ...EMPTY_ITEM }] : filtered
+    })
   }
 
   const duplicateItem = (idx: number) => {
@@ -53,20 +56,67 @@ export function BOMManualEntry({ existingSiteKitId, onImportComplete, onClose }:
     })
   }
 
-  // Parse bulk paste: each line = "SKU\tQty\tDescription\tAssetTags" or comma-separated
+  // Parse bulk paste: extracts SKU (number), Qty (number), Description, and Asset Tags (TM-prefixed)
   const handleBulkPaste = () => {
     if (!bulkText.trim()) return
     const lines = bulkText.trim().split('\n')
     const parsed: BOMItem[] = []
     for (const line of lines) {
-      const parts = line.includes('\t') ? line.split('\t') : line.split(',')
-      if (parts.length >= 3) {
-        parsed.push({
-          siteKitSku: parts[0].trim(),
-          quantity: parseInt(parts[1].trim()) || 1,
-          description: parts[2].trim(),
-          assetTags: parts.slice(3).join(', ').trim(),
-        })
+      const trimmed = line.trim()
+      if (!trimmed) continue
+
+      let sku = ''
+      let qty = 1
+      let description = ''
+      let assetTags = ''
+
+      if (trimmed.includes('\t')) {
+        // Tab-separated: SKU \t Qty \t Description \t AssetTags
+        const parts = trimmed.split('\t')
+        sku = parts[0]?.trim() || ''
+        qty = parseInt(parts[1]?.trim()) || 1
+        const rest = parts.slice(2).join('\t').trim()
+        const restParts = rest.split(',')
+        const descParts: string[] = []
+        const tagParts: string[] = []
+        for (const p of restParts) {
+          if (p.trim().match(/^TM\d/i)) {
+            tagParts.push(p.trim())
+          } else {
+            descParts.push(p.trim())
+          }
+        }
+        description = descParts.join(', ')
+        assetTags = tagParts.join(', ')
+      } else {
+        // Comma or space separated — use regex to extract SKU and Qty from the start
+        const match = trimmed.match(/^(\d+)[,\s]+\s*(\d+)[,\s]+\s*(.*)$/)
+        if (match) {
+          sku = match[1]
+          qty = parseInt(match[2]) || 1
+          const rest = match[3]
+          // Separate description from TM asset tags
+          const restParts = rest.split(',')
+          const descParts: string[] = []
+          const tagParts: string[] = []
+          for (const p of restParts) {
+            if (p.trim().match(/^TM\d/i)) {
+              tagParts.push(p.trim())
+            } else {
+              descParts.push(p.trim())
+            }
+          }
+          description = descParts.join(', ').replace(/,\s*$/, '')
+          assetTags = tagParts.join(', ')
+        } else {
+          // Fallback: treat entire line as description
+          sku = ''
+          description = trimmed
+        }
+      }
+
+      if (sku || description) {
+        parsed.push({ siteKitSku: sku, quantity: qty, description, assetTags })
       }
     }
     if (parsed.length > 0) {
@@ -235,7 +285,7 @@ export function BOMManualEntry({ existingSiteKitId, onImportComplete, onClose }:
               <textarea
                 value={bulkText}
                 onChange={(e) => setBulkText(e.target.value)}
-                placeholder={`32683, 43, FTSF Sync Cable F\n33143, 4, Delta 10A Breaker, TM10607099, TM10600507\n33192, 1, Indoor Equipment Rack`}
+                placeholder={`32683, 43, FTSF Sync Cable F\n33143, 4, Delta 10A Breaker, TM10607099, TM10600507\n34097 9 IXR-E Router Gen 2, TM10604714, TM10600510\n33192, 1, Indoor Equipment Rack`}
                 style={{
                   width: '100%', minHeight: '100px', fontFamily: 'monospace', fontSize: '0.75rem',
                   padding: '0.75rem', borderRadius: '6px', border: '1px solid var(--border-light)',
@@ -317,11 +367,10 @@ export function BOMManualEntry({ existingSiteKitId, onImportComplete, onClose }:
                   </button>
                   <button
                     onClick={() => removeItem(idx)}
-                    disabled={items.length === 1}
                     title="Eliminar fila"
                     style={{
                       background: 'transparent', border: 'none', cursor: 'pointer',
-                      color: items.length === 1 ? 'var(--border-light)' : '#ef4444', padding: '4px',
+                      color: '#ef4444', padding: '4px',
                     }}
                   >
                     <Trash2 size={14} />
