@@ -36,13 +36,16 @@ export async function POST(
         throw new Error('SiteKitItem not found')
       }
 
-      // Link each WIP item
+      // Link each WIP item and sum their quantities
+      let totalQtyLinked = 0
       for (const wipItemId of itemIds) {
         const wipItem = await tx.item.findUnique({
           where: { id: parseInt(wipItemId) },
           include: { serialNumbers: true },
         })
         if (!wipItem) continue
+
+        totalQtyLinked += wipItem.quantity
 
         // Find unlinked EXPECTED asset tags and link them
         const availableTags = skItem.assetTags.filter((t) => t.status === 'EXPECTED' && !t.linkedItemId)
@@ -70,8 +73,8 @@ export async function POST(
 
       }
 
-      // Recalculate quantityReceived
-      const actualReceived = skItem.quantityReceived + (itemIds.length)
+      // Recalculate quantityReceived using actual quantities from WIP items
+      const actualReceived = skItem.quantityReceived + totalQtyLinked
 
       // Determine new status
       let newStatus: string
